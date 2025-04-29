@@ -1,8 +1,8 @@
 @tool
 extends "res://addons/copilot-advanced/LLM.gd"
 
-@onready var URL = $"../../VBoxParent/ModelSetting3/URL".text
-const PROMPT_PREFIX = """#This is a GDScript script using Godot 4.0. 
+@onready var URL : String  = ""
+const PROMPT_PREFIX = """#This is a GDScript script using Godot 4.x. 
 #That means the new GDScript 2.0 syntax is used. Here's a couple of important changes that were introduced:
 #- Use @export annotation for exports
 #- Use Node3D instead of Spatial, and position instead of translation
@@ -18,14 +18,11 @@ const PROMPT_PREFIX = """#This is a GDScript script using Godot 4.0.
 """
 const MAX_LENGTH = 15000
 
-func _get_models():
-	return [
-		"custom",
-		"text-davinci-003"
-	]
-
 func _set_model(model_name):
 	model = model_name
+
+func _set_url(url):
+	URL = url
 
 func _send_user_prompt(user_prompt, user_suffix):
 	get_completion(user_prompt, user_suffix)
@@ -41,16 +38,15 @@ func get_completion(_prompt, _suffix):
 		else:
 			prompt = prompt.substr(diff - suffix.length())
 			suffix = ""
-	var calculated_model = model
-	if model == "custom":
-		calculated_model = custom_model_text	
 	var body = {
-		"model": calculated_model,
+		"model": model,
 		"prompt": PROMPT_PREFIX + prompt,
 		"suffix": suffix,
-		"temperature": 0.7,
+		"options":{
+			"temperature": 0.5
+		},
 		"max_tokens": 500,
-		"stop": "\n\n" if allow_multiline else "\n" 
+		"stream": false
 	}
 	var headers = [
 		"Content-Type: application/json"
@@ -59,7 +55,7 @@ func get_completion(_prompt, _suffix):
 	add_child(http_request)
 	http_request.connect("request_completed",on_request_completed.bind(prompt, suffix, http_request))
 	var json_body = JSON.stringify(body)
-	var error = http_request.request(URL, headers, HTTPClient.METHOD_POST, json_body)
+	var error = http_request.request(URL+"/v1/completions", headers, HTTPClient.METHOD_POST, json_body)
 	if error != OK:
 		emit_signal("completion_error", null)
 
@@ -68,16 +64,19 @@ func on_request_completed(result, response_code, headers, body, pre, post, http_
 	test_json_conv.parse(body.get_string_from_utf8())
 	var json = test_json_conv.get_data()
 	var response = json
-	if !response.has("choices"):
+	if !response.has("response"):
 		emit_signal("completion_error", response)
 		return
-	var completion = response.choices[0].text
+	var completion = response.response
 	if is_instance_valid(http_request):
 		http_request.queue_free()
 	emit_signal("completion_received", completion, pre, post)
 
+
 func _on_url_text_changed(new_text):
 	URL = new_text
+
+
 
 
 

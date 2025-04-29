@@ -2,18 +2,17 @@
 extends Control
 
 @onready var llms = $LLMs
-@onready var context_label = $VBoxParent/Context
-@onready var status_label = $VBoxParent/Status
-@onready var model_select = $VBoxParent/ModelSetting/Model
-@onready var shortcut_modifier_select = $VBoxParent/ShortcutSetting/HBoxContainer/Modifier
-@onready var shortcut_key_select = $VBoxParent/ShortcutSetting/HBoxContainer/Key
-@onready var multiline_toggle = $VBoxParent/MultilineSetting/Multiline
-@onready var openai_key_title = $VBoxParent/OpenAiSetting/Label
-@onready var openai_key_input = $VBoxParent/OpenAiSetting/OpenAiKey
-@onready var version_label = $Version
-@onready var info = $VBoxParent/Info
-@onready var custom_model: BoxContainer = $VBoxParent/ModelSetting2
-@onready var urlTextInput: LineEdit = $VBoxParent/ModelSetting3/URL
+@onready var lmStudioCompletions = $LLMs/LmStudioCompletion
+@onready var ollamaCompletions = $LLMs/OllamaCompletion
+@onready var model_select = $VBoxParent/SettingsCollapsable/SelectModel/Model
+@onready var shortcut_modifier_select = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Modifier
+@onready var shortcut_key_select = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Key
+@onready var info: RichTextLabel = $VBoxParent/VBoxContainer/Info
+@onready var urlTextInput: LineEdit = $VBoxParent/SettingsCollapsable/ModelSetting3/URL
+@onready var providerInput: OptionButton = get_node("%provider")
+@onready var reloadButton: TextureButton = $VBoxParent/SettingsCollapsable/SelectModel/TextureButton
+@onready var loadingIndicator: ColorRect = get_node("%Indicator")
+@onready var settingsSection: Control = $VBoxParent/SettingsCollapsable
 
 @export var icon_shader : ShaderMaterial
 @export var highlight_color : Color
@@ -28,21 +27,21 @@ var indicator = null
 var models = {}
 var openai_api_key
 var cur_model
-var custom_model_text
+var provider
 var cur_shortcut_modifier = "Control" if is_mac() else "Alt"
 var cur_shortcut_key = "C"
 var allow_multiline = true
-var URL = "https://api.openai.com/v1/completions"
+var URL
 
 const PREFERENCES_STORAGE_NAME = "user://copilot-advanced.cfg"
 const PREFERENCES_PASS = "F4fv2Jxpasp20VS5VSp2Yp2v9aNVJ21aRK"
-const GITHUB_COPILOT_DISCLAIMER = "Use GitHub Copilot keys at your own risk. Retrieve key by following instructions [url=https://gitlab.com/aaamoon/copilot-gpt4-service?tab=readme-ov-file#obtaining-copilot-token]here[/url]."
 
 func _ready():
-	#Initialize dock, load settings
-	populate_models()
+	#populate_models()
 	populate_modifiers()
 	load_config()
+	pass
+	#Initialize dock, load settings
 
 func populate_models():
 	#Add all found models to settings
@@ -149,16 +148,14 @@ func update_loading_indicator(create = false):
 func remove_loading_indicator():
 	#Free loading indicator, and return editor to editable state
 	if is_instance_valid(indicator): indicator.queue_free()
-	set_status("")
 	var editor = get_code_editor()
 	editor.editable = true
 
-func set_status(text):
-	#Update status label in dock
-	status_label.text = ""
+# Write 3 lines here
 
 func insert_completion(content: String, pre, post):
 	#Overwrite code editor text to insert received completion
+	info.text = content
 	var editor = get_code_editor()
 	var scroll = editor.scroll_vertical
 	
@@ -203,7 +200,6 @@ func update_highlights():
 func update_context():
 	#Show currently edited file in dock
 	var script = get_current_script()
-	if script: context_label.text = script.resource_path.get_file()
 
 func on_main_screen_changed(_screen):
 	#Track current editor screen (2D, 3D, Script)
@@ -229,7 +225,6 @@ func get_code_editor():
 func request_completion():
 	#Get current code and request completion from active model
 	if request_code_state: return
-	set_status("Asking %s..." % cur_model)
 	update_loading_indicator(true)
 	var pre_post = get_pre_post()
 	var llm = get_llm()
@@ -252,12 +247,17 @@ func get_pre_post():
 		post += editor.get_line(ii) + "\n"
 	return [pre, post]
 
+#Wrinte ad add function
+
 func get_llm():
 	#Get currently active llm and set active model
-	var llm = get_node(models[cur_model])
-	llm._set_api_key(openai_api_key)
+	var llm = lmStudioCompletions
+	match providerInput.selected:
+		0:
+			llm = ollamaCompletions
+		1:
+			llm = lmStudioCompletions
 	llm._set_model(cur_model)
-	llm._set_custom_model_text(custom_model_text)
 	llm._set_multiline(allow_multiline)
 	return llm
 
@@ -265,27 +265,9 @@ func matches_request_state(pre, post):
 	#Check if code passed for completion request matches current code
 	return request_code_state[0] == pre and request_code_state[1] == post
 
-func set_openai_api_key(key):
-	#Apply API key
-	openai_api_key = key
-
 func set_model(model_name):
 	#Apply selected model
 	cur_model = model_name
-	# Handle some special model scenarios
-	if "github-copilot" in model_name:
-		openai_key_title.text = "GitHub Copilot API Key"
-		info.parse_bbcode(GITHUB_COPILOT_DISCLAIMER)
-		info.show()
-	else:
-		openai_key_title.text = "OpenAI API Key"
-		info.hide()
-
-func _set_custom_model_text(text):
-	custom_model_text = text
-
-func _set_url(url):
-	URL = url
 
 
 func set_shortcut_modifier(modifier):
@@ -296,9 +278,6 @@ func set_shortcut_key(key):
 	#Apply selected shortcut key
 	cur_shortcut_key = key
 
-func set_multiline(active):
-	#Apply selected multiline setting
-	allow_multiline = active
 
 func _on_code_completion_received(completion, pre, post):
 	#Attempt to insert received code completion
@@ -314,16 +293,9 @@ func _on_code_completion_error(error):
 	clear_highlights()
 	push_error(error)
 
-func _on_open_ai_key_changed(key):
-	#Apply setting and store in config file
-	set_openai_api_key(key)
-	store_config()
-	
-	
+
 
 func _on_model_selected(index):
-	#Make the custom model text visible
-	custom_model.visible = model_select.get_item_text(index) == "custom";
 	#Apply setting and store in config file
 	set_model(model_select.get_item_text(index))
 	store_config()
@@ -338,21 +310,13 @@ func _on_shortcut_key_selected(index):
 	set_shortcut_key(shortcut_key_select.get_item_text(index))
 	store_config()
 
-func _on_multiline_toggled(button_pressed):
-	#Apply setting and store in config file
-	set_multiline(button_pressed)
-	store_config()
-
 func store_config():
 	#Store current setting in config file
 	var config = ConfigFile.new()
 	config.set_value("preferences", "model", cur_model)
-	config.set_value("preferences", "custom_model_text", custom_model_text)
+	config.set_value("preferences", "provider", provider)
 	config.set_value("preferences", "shortcut_modifier", cur_shortcut_modifier)
 	config.set_value("preferences", "shortcut_key", cur_shortcut_key)
-	config.set_value("preferences", "allow_multiline", allow_multiline)
-	config.set_value("keys", "openai", openai_api_key)
-	config.set_value("preferences", "url", URL)
 	config.save_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
 
 func load_config():
@@ -361,20 +325,17 @@ func load_config():
 	var err = config.load_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
 	if err != OK: return
 	cur_model = config.get_value("preferences", "model", cur_model)
+	provider = config.get_value("preferences", "provider", provider)
+	providerInput.selected = provider
 	apply_by_value(model_select, cur_model)
 	set_model(model_select.get_item_text(model_select.selected))
 	cur_shortcut_modifier = config.get_value("preferences", "shortcut_modifier", cur_shortcut_modifier)
 	apply_by_value(shortcut_modifier_select, cur_shortcut_modifier)
 	cur_shortcut_key = config.get_value("preferences", "shortcut_key", cur_shortcut_key)
 	apply_by_value(shortcut_key_select, cur_shortcut_key)
-	allow_multiline = config.get_value("preferences", "allow_multiline", allow_multiline)
-	multiline_toggle.set_pressed_no_signal(allow_multiline)
-	openai_api_key = config.get_value("keys", "openai", "")
-	openai_key_input.text = openai_api_key
-	_set_custom_model_text(config.get_value("preferences", "custom_model_text", custom_model_text))
-	_set_url(config.get_value("preferences", "url", URL))
-	urlTextInput.text = URL
-	custom_model.get_node("%CustomModel").text = custom_model_text
+	lmStudioCompletions._set_url(urlTextInput.text)
+	ollamaCompletions._set_url(urlTextInput.text)
+	_on_provider_item_selected(providerInput.selected)
 	
 
 func apply_by_value(option_button, value):
@@ -383,20 +344,105 @@ func apply_by_value(option_button, value):
 		if option_button.get_item_text(i) == value:
 			option_button.select(i)
 
-func set_version(version):
-	version_label.text = "v%s" % version
-
-
-func on_info_meta_clicked(meta):
-	OS.shell_open(meta)
-
-
-func _on_custom_model_text_changed(new_text):
-	_set_custom_model_text(new_text)
+func _on_provider_item_selected(index: int) -> void:
+	provider = index
+	match index:
+		0:
+			urlTextInput.text = "http://localhost:11434"
+			self.updateOllamaModel()
+		1:
+			urlTextInput.text = "http://127.0.0.1:1234"
+			self.updateLmStudioModel()
+	lmStudioCompletions._set_url(urlTextInput.text)
+	ollamaCompletions._set_url(urlTextInput.text)
 	store_config()
 
-func _on_url_text_changed(new_text):
-	_set_url(new_text)
-	store_config()
+
+func updateOllamaModel():
+	reloadButton.visible = false
+	loadingIndicator.visible = true
+	var http_request = HTTPRequest.new()
+	add_child(http_request)
+	http_request.connect("request_completed",self._ollamaModelLoaded)
+	var error = http_request.request(urlTextInput.text+"/api/tags")
+	if error != OK:
+		reloadButton.visible = true
+		loadingIndicator.visible = false
+		pass
+		# handle the error
+
+func _ollamaModelLoaded(result, response_code, headers, body):
+	reloadButton.visible = true
+	loadingIndicator.visible = false
+	if result != HTTPRequest.RESULT_SUCCESS:
+		print("Error on ollama model request")
+	var test_json_conv = JSON.new()
+	test_json_conv.parse(body.get_string_from_utf8())
+	var json = test_json_conv.get_data()
+	model_select.clear()
+	for model in json.models:
+		model_select.add_item(model.model)
+	model_select.select(0)
+
+
+
+#Write an add function here
+
+
+func updateLmStudioModel():
+	reloadButton.visible = false
+	loadingIndicator.visible = true
+	var http_request = HTTPRequest.new()
+	add_child(http_request)
+	http_request.connect("request_completed",self._lmStudioModelLoaded)
+	var error = http_request.request(urlTextInput.text+"/v1/models/")
+	if error != OK:
+		reloadButton.visible = true
+		loadingIndicator.visible = false
+		pass
+		# handle the error
+
+func _lmStudioModelLoaded(result, response_code, headers, body):
+	reloadButton.visible = true
+	loadingIndicator.visible = false
+	if result != HTTPRequest.RESULT_SUCCESS:
+		print("Error on ollama model request")
+	var test_json_conv = JSON.new()
+	test_json_conv.parse(body.get_string_from_utf8())
+	var json = test_json_conv.get_data()
+	model_select.clear()
+	for model in json.data:
+		model_select.add_item(model.id)
+	model_select.select(0)
+
+func _on_texture_button_button_down() -> void:
+	#Refresh model based on provider
+	match providerInput.selected:
+		0:
+			self.updateOllamaModel()
+		1:
+			self.updateLmStudioModel()
+	pass # Replace with function body.
+
+
+func _on_url_text_changed(new_text: String) -> void:
+	print("PAsso qui: ")
+	print(new_text)
+	match providerInput.selected:
+		0:
+			ollamaCompletions._set_url(new_text)
+			pass
+		1:
+			lmStudioCompletions._set_url(new_text)
+	
+
+
+func _on_check_button_toggled(toggled_on: bool) -> void:
+	print(toggled_on)
+	if toggled_on:
+		settingsSection.visible = true
+	else:
+		settingsSection.visible = false
+
 
 
