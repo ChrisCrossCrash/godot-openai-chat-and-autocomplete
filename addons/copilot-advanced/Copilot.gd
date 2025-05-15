@@ -3,16 +3,30 @@ extends Control
 
 @onready var llms = $LLMs
 @onready var lmStudioCompletions = $LLMs/LmStudioCompletion
+@onready var geminiCompletions = $LLMs/Gemini
 @onready var ollamaCompletions = $LLMs/OllamaCompletion
 @onready var model_select = $VBoxParent/SettingsCollapsable/SelectModel/Model
 @onready var shortcut_modifier_select = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Modifier
 @onready var shortcut_key_select = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Key
 @onready var info: RichTextLabel = $VBoxParent/VBoxContainer/Info
-@onready var urlTextInput: LineEdit = $VBoxParent/SettingsCollapsable/ModelSetting3/URL
+@onready var urlTextInput: LineEdit = get_node("%URL")
 @onready var providerInput: OptionButton = get_node("%provider")
 @onready var reloadButton: TextureButton = $VBoxParent/SettingsCollapsable/SelectModel/TextureButton
 @onready var loadingIndicator: ColorRect = get_node("%Indicator")
+@onready var urlContainer: HBoxContainer = get_node("%UrlContainer")
+@onready var apiKeyContainer: HBoxContainer = get_node("%ApiKeyContainer")
+@onready var apiKeyInput: LineEdit = get_node("%API_KEY")
+
+
+# Section part
 @onready var settingsSection: Control = $VBoxParent/SettingsCollapsable
+@onready var chatSection: ScrollContainer = get_node("%ChatSection") 
+
+
+#Chat element
+@onready var sendButton: Button = get_node("%SendChatMessage")
+@onready var inputChat: TextEdit = get_node("%InputChat")
+@onready var chatContainer: VBoxContainer = get_node("%ChatContainer")
 
 @export var icon_shader : ShaderMaterial
 @export var highlight_color : Color
@@ -32,6 +46,7 @@ var cur_shortcut_modifier = "Control" if is_mac() else "Alt"
 var cur_shortcut_key = "C"
 var allow_multiline = true
 var URL
+
 
 const PREFERENCES_STORAGE_NAME = "user://copilot-advanced.cfg"
 const PREFERENCES_PASS = "F4fv2Jxpasp20VS5VSp2Yp2v9aNVJ21aRK"
@@ -255,10 +270,16 @@ func get_llm():
 	match providerInput.selected:
 		0:
 			llm = ollamaCompletions
+			llm._set_model(cur_model)
+			llm._set_multiline(allow_multiline)
 		1:
 			llm = lmStudioCompletions
-	llm._set_model(cur_model)
-	llm._set_multiline(allow_multiline)
+			llm._set_model(cur_model)
+			llm._set_multiline(allow_multiline)
+		2:
+			llm = geminiCompletions
+			llm.SetModel(cur_model)
+			llm.SetMultiline(allow_multiline)
 	return llm
 
 func matches_request_state(pre, post):
@@ -348,11 +369,19 @@ func _on_provider_item_selected(index: int) -> void:
 	provider = index
 	match index:
 		0:
+			urlContainer.visible = true
+			apiKeyContainer.visible = false
 			urlTextInput.text = "http://localhost:11434"
 			self.updateOllamaModel()
 		1:
+			urlContainer.visible = true
+			apiKeyContainer.visible = false
 			urlTextInput.text = "http://127.0.0.1:1234"
 			self.updateLmStudioModel()
+		2:
+			urlContainer.visible = false
+			apiKeyContainer.visible = true
+			self.updateGeminiModel()
 	lmStudioCompletions._set_url(urlTextInput.text)
 	ollamaCompletions._set_url(urlTextInput.text)
 	store_config()
@@ -385,10 +414,6 @@ func _ollamaModelLoaded(result, response_code, headers, body):
 	model_select.select(0)
 
 
-
-#Write an add function here
-
-
 func updateLmStudioModel():
 	reloadButton.visible = false
 	loadingIndicator.visible = true
@@ -406,13 +431,39 @@ func _lmStudioModelLoaded(result, response_code, headers, body):
 	reloadButton.visible = true
 	loadingIndicator.visible = false
 	if result != HTTPRequest.RESULT_SUCCESS:
-		print("Error on ollama model request")
+		print("Error on LmStudio model request")
 	var test_json_conv = JSON.new()
 	test_json_conv.parse(body.get_string_from_utf8())
 	var json = test_json_conv.get_data()
 	model_select.clear()
 	for model in json.data:
 		model_select.add_item(model.id)
+	model_select.select(0)
+
+func updateGeminiModel():
+	reloadButton.visible = false
+	loadingIndicator.visible = true
+	var http_request = HTTPRequest.new()
+	add_child(http_request)
+	http_request.connect("request_completed",self._geminiModelLoaded)
+	var error = http_request.request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=50&pageToken=&key="+apiKeyInput.text)
+	if error != OK:
+		reloadButton.visible = true
+		loadingIndicator.visible = false
+		pass
+		# handle the error
+
+func _geminiModelLoaded(result, response_code, headers, body):
+	reloadButton.visible = true
+	loadingIndicator.visible = false
+	if result != HTTPRequest.RESULT_SUCCESS:
+		print("Error on gemini model request")
+	var test_json_conv = JSON.new()
+	test_json_conv.parse(body.get_string_from_utf8())
+	var json = test_json_conv.get_data()
+	model_select.clear()
+	for model in json.models:
+		model_select.add_item(model.name)
 	model_select.select(0)
 
 func _on_texture_button_button_down() -> void:
@@ -422,23 +473,24 @@ func _on_texture_button_button_down() -> void:
 			self.updateOllamaModel()
 		1:
 			self.updateLmStudioModel()
+		2:
+			self.updateGeminiModel()
 	pass # Replace with function body.
 
 
 func _on_url_text_changed(new_text: String) -> void:
-	print("PAsso qui: ")
-	print(new_text)
 	match providerInput.selected:
 		0:
 			ollamaCompletions._set_url(new_text)
 			pass
 		1:
 			lmStudioCompletions._set_url(new_text)
-	
+			pass
+		2:
+			pass
 
 
 func _on_check_button_toggled(toggled_on: bool) -> void:
-	print(toggled_on)
 	if toggled_on:
 		settingsSection.visible = true
 	else:
@@ -446,3 +498,66 @@ func _on_check_button_toggled(toggled_on: bool) -> void:
 
 
 
+
+
+func _on_enable_chat_toggled(toggled_on: bool) -> void:
+	if toggled_on:
+		chatSection.visible = true
+	else:
+		chatSection.visible = false
+
+
+
+func _botMessage(text:String ) -> void:
+	var label: RichTextLabel = RichTextLabel.new()
+	var theme = ResourceLoader.load("res://addons/copilot-advanced/asset/BotTheme.tres")
+	label.theme = theme
+	label.text = text
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.selection_enabled = true
+	chatContainer.add_child(label)
+	#Create horizontal separator
+	var hseparator: HSeparator = HSeparator.new()
+	hseparator.custom_minimum_size = Vector2(0,35)
+	chatContainer.add_child(hseparator)
+	#Scroll to end
+	await get_tree().process_frame 
+	chatSection.scroll_vertical = chatSection.get_v_scroll_bar().max_value
+
+
+func _userMessage(text:String ) -> void:
+	var label: RichTextLabel = RichTextLabel.new()
+	var theme = ResourceLoader.load("res://addons/copilot-advanced/asset/UserTheme.tres")
+	label.theme = theme
+	label.text = text
+	label.bbcode_enabled = true
+	label.fit_content = true
+	chatContainer.add_child(label)
+	#Create horizontal separator
+	var hseparator: HSeparator = HSeparator.new()
+	hseparator.custom_minimum_size = Vector2(0,35)
+	chatContainer.add_child(hseparator)
+	#Scroll to end
+	await get_tree().process_frame 
+	chatSection.scroll_vertical = chatSection.get_v_scroll_bar().max_value
+
+func _on_send_chat_message_pressed() -> void:
+	#Send chat message
+	if !inputChat:
+		inputChat = get_node("%InputChat")
+	var text = inputChat.text
+	#Logic to call the API
+	_userMessage(text)
+	inputChat.text = ""
+	get_llm().chat_message(text)
+
+
+func _on_send_chat_message_2_pressed() -> void:
+	for c in chatContainer.get_children():
+		c.queue_free()
+
+
+func _on_lm_studio_completion_chat_received(text: Variant) -> void:
+	print("DANSJK")
+	_botMessage(text)

@@ -75,17 +75,3 @@ func on_request_completed(result, response_code, headers, body, pre, post, http_
 
 func _on_url_text_changed(new_text):
 	URL = new_text
-
-
-
-
-
-
-
-
-
-
-
-
-
-

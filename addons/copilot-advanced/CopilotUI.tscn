@@ -1,12 +1,21 @@
-[gd_scene load_steps=8 format=3 uid="uid://rv5dl08lcb8e"]
+[gd_scene load_steps=12 format=3 uid="uid://rv5dl08lcb8e"]
 
-[ext_resource type="Script" path="res://addons/copilot-advanced/Copilot.gd" id="1_pq1gj"]
+[ext_resource type="Script" uid="uid://b81eyjsixilbv" path="res://addons/copilot-advanced/Copilot.gd" id="1_pq1gj"]
 [ext_resource type="Material" uid="uid://cccmbprav6vgu" path="res://addons/copilot-advanced/small_icon.tres" id="2_gdw4j"]
-[ext_resource type="Script" path="res://addons/copilot-advanced/LmStudioCompletion.gd" id="3_loa2x"]
+[ext_resource type="Script" uid="uid://dsjpmklb6juib" path="res://addons/copilot-advanced/LmStudioCompletion.gd" id="3_loa2x"]
 [ext_resource type="Material" uid="uid://bl1rtf743e4l3" path="res://addons/copilot-advanced/large_icon.tres" id="3_xn70b"]
 [ext_resource type="Texture2D" uid="uid://dgko4rse8ssdn" path="res://addons/copilot-advanced/asset/refresh.png" id="4_sh1u6"]
 [ext_resource type="Texture2D" uid="uid://bglmfig6w4833" path="res://addons/copilot-advanced/asset/Check.png" id="5_446lv"]
-[ext_resource type="Script" path="res://addons/copilot-advanced/OllamaCompletion.gd" id="7_84eej"]
+[ext_resource type="Theme" uid="uid://b8ev0etxsbepm" path="res://addons/copilot-advanced/asset/BotTheme.tres" id="6_n0bkr"]
+[ext_resource type="Script" uid="uid://c4w7is8s0l81m" path="res://addons/copilot-advanced/OllamaCompletion.gd" id="7_84eej"]
+[ext_resource type="Script" uid="uid://cxbmkmnnl1o5v" path="res://addons/copilot-advanced/Gemini.cs" id="8_urx8c"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f4c1j"]
+bg_color = Color(0.152941, 0.152941, 0.152941, 0.623529)
+shadow_size = 1
+
+[sub_resource type="Theme" id="Theme_krmud"]
+Label/styles/normal = SubResource("StyleBoxFlat_f4c1j")
 
 [node name="Copilot" type="Control"]
 layout_mode = 3
@@ -111,20 +120,48 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 10
-item_count = 2
-selected = 1
+selected = 2
 fit_to_longest_item = false
+item_count = 3
 popup/item_0/text = "Ollama"
 popup/item_0/id = 0
 popup/item_1/text = "Lm studio"
 popup/item_1/id = 1
+popup/item_2/text = "Gemini"
+popup/item_2/id = 2
 
-[node name="ModelSetting3" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
+[node name="ApiKeyContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/ModelSetting3"]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer"]
+custom_minimum_size = Vector2(100, 2.08165e-12)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Gemini api key"
+vertical_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer"]
+layout_mode = 2
+
+[node name="API_KEY" type="LineEdit" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
+size_flags_horizontal = 10
+text = "http://127.0.0.1:1234"
+
+[node name="UrlContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/UrlContainer"]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -132,10 +169,11 @@ size_flags_vertical = 1
 text = "Server URL"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/ModelSetting3"]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/UrlContainer"]
 layout_mode = 2
 
-[node name="URL" type="LineEdit" parent="VBoxParent/SettingsCollapsable/ModelSetting3"]
+[node name="URL" type="LineEdit" parent="VBoxParent/SettingsCollapsable/UrlContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 size_flags_horizontal = 10
@@ -160,25 +198,7 @@ layout_mode = 2
 [node name="Model" type="OptionButton" parent="VBoxParent/SettingsCollapsable/SelectModel"]
 layout_mode = 2
 size_flags_horizontal = 10
-item_count = 8
-selected = 0
 fit_to_longest_item = false
-popup/item_0/text = "qwen3-0.6b"
-popup/item_0/id = 0
-popup/item_1/text = "text-embedding-nomic-embed-text-v1.5"
-popup/item_1/id = 1
-popup/item_2/text = "qwen2.5-7b-instruct-1m"
-popup/item_2/id = 2
-popup/item_3/text = "qwen2.5-coder-14b-instruct"
-popup/item_3/id = 3
-popup/item_4/text = "gemma-3-4b-it-qat"
-popup/item_4/id = 4
-popup/item_5/text = "deepseek-r1-distill-llama-8b"
-popup/item_5/id = 5
-popup/item_6/text = "qwen2.5-7b-instruct"
-popup/item_6/id = 6
-popup/item_7/text = "deepseek-coder-v2-lite-instruct"
-popup/item_7/id = 7
 
 [node name="TextureButton" type="TextureButton" parent="VBoxParent/SettingsCollapsable/SelectModel"]
 custom_minimum_size = Vector2(25, 25)
@@ -226,8 +246,8 @@ size_flags_horizontal = 10
 [node name="Modifier" type="OptionButton" parent="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 10
-item_count = 3
 selected = 0
+item_count = 3
 popup/item_0/text = "Alt"
 popup/item_0/id = 0
 popup/item_1/text = "Ctrl"
@@ -238,8 +258,8 @@ popup/item_2/id = 2
 [node name="Key" type="OptionButton" parent="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 10
-item_count = 32
 selected = 2
+item_count = 32
 popup/item_0/text = "A"
 popup/item_0/id = 0
 popup/item_1/text = "B"
@@ -306,10 +326,89 @@ popup/item_31/text = "0"
 popup/item_31/id = 31
 
 [node name="Info box description" type="Label" parent="VBoxParent"]
+visible = false
 layout_mode = 2
 text = "Suggested code"
 
+[node name="ChatTitleContainer" type="HBoxContainer" parent="VBoxParent"]
+layout_mode = 2
+
+[node name="ChatTitle" type="Label" parent="VBoxParent/ChatTitleContainer"]
+layout_mode = 2
+text = "Chat"
+
+[node name="EnableChat" type="CheckButton" parent="VBoxParent/ChatTitleContainer"]
+layout_mode = 2
+button_pressed = true
+alignment = 2
+icon_alignment = 2
+
+[node name="Separator3" type="HSeparator" parent="VBoxParent"]
+layout_mode = 2
+
+[node name="ChatSection" type="ScrollContainer" parent="VBoxParent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 367)
+layout_mode = 2
+theme = SubResource("Theme_krmud")
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxParent/ChatSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxParent/ChatSection/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ChatContainer" type="VBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="RichTextLabel" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer2/ChatContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+focus_mode = 2
+theme = ExtResource("6_n0bkr")
+bbcode_enabled = true
+text = "[b]Sample[/b]"
+fit_content = true
+selection_enabled = true
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxParent/ChatSection/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="ClearChat" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+text = "Clear"
+
+[node name="InputChat" type="TextEdit" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ask here something..."
+
+[node name="SendChatMessage" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+text = "Send"
+
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxParent"]
+visible = false
 layout_mode = 2
 
 [node name="Info" type="RichTextLabel" parent="VBoxParent/VBoxContainer"]
@@ -337,6 +436,9 @@ selection_enabled = true
 [node name="LmStudioCompletion" type="Node" parent="LLMs"]
 script = ExtResource("3_loa2x")
 
+[node name="Gemini" type="Node" parent="LLMs"]
+script = ExtResource("8_urx8c")
+
 [node name="OllamaCompletion" type="Node" parent="LLMs"]
 script = ExtResource("7_84eej")
 
@@ -354,13 +456,19 @@ vertical_alignment = 2
 
 [connection signal="toggled" from="VBoxParent/HBoxContainer/CheckButton" to="." method="_on_check_button_toggled"]
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsable/Provider/provider" to="." method="_on_provider_item_selected"]
-[connection signal="text_changed" from="VBoxParent/SettingsCollapsable/ModelSetting3/URL" to="." method="_on_url_text_changed"]
+[connection signal="text_changed" from="VBoxParent/SettingsCollapsable/ApiKeyContainer/API_KEY" to="." method="_on_url_text_changed"]
+[connection signal="text_changed" from="VBoxParent/SettingsCollapsable/UrlContainer/URL" to="." method="_on_url_text_changed"]
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsable/SelectModel/Model" to="." method="_on_model_selected"]
 [connection signal="button_down" from="VBoxParent/SettingsCollapsable/SelectModel/TextureButton" to="." method="_on_texture_button_button_down"]
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Modifier" to="." method="_on_shortcut_modifier_selected"]
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Key" to="." method="_on_shortcut_key_selected"]
+[connection signal="toggled" from="VBoxParent/ChatTitleContainer/EnableChat" to="." method="_on_enable_chat_toggled"]
+[connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/ClearChat" to="." method="_on_send_chat_message_2_pressed"]
+[connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/SendChatMessage" to="." method="_on_send_chat_message_pressed"]
 [connection signal="meta_clicked" from="VBoxParent/VBoxContainer/Info" to="." method="on_info_meta_clicked"]
+[connection signal="chat_received" from="LLMs/LmStudioCompletion" to="." method="_on_lm_studio_completion_chat_received"]
 [connection signal="completion_error" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_error"]
 [connection signal="completion_received" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_received"]
+[connection signal="ChatReceived" from="LLMs/Gemini" to="." method="_on_lm_studio_completion_chat_received"]
 [connection signal="completion_error" from="LLMs/OllamaCompletion" to="." method="_on_code_completion_error"]
 [connection signal="completion_received" from="LLMs/OllamaCompletion" to="." method="_on_code_completion_received"]

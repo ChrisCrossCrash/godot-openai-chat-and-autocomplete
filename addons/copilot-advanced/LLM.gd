@@ -3,10 +3,11 @@ extends Node
 
 var model
 var custom_model_text
-var api_key
+var api_key = "AIzaSyArTBrAO7x8GGlhhHr9w_9VvdDdgEo78b4"
 var allow_multiline
 
 signal completion_received(completion, pre, post)
+signal chat_received(text)
 signal completion_error(error)
 
 #Expects return value of String Array
@@ -32,4 +33,3 @@ func _set_multiline(allowed):
 #Sends user prompt
 func _send_user_prompt(user_prompt, user_suffix):
 	pass
-
