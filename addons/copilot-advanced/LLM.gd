@@ -7,6 +7,7 @@ var api_key
 var allow_multiline
 
 signal completion_received(completion, pre, post)
+signal chat_received(text)
 signal completion_error(error)
 
 #Expects return value of String Array
@@ -32,4 +33,3 @@ func _set_multiline(allowed):
 #Sends user prompt
 func _send_user_prompt(user_prompt, user_suffix):
 	pass
-

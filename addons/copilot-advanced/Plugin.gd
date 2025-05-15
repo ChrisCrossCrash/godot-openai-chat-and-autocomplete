@@ -18,4 +18,3 @@ func _enter_tree() -> void:
 func _exit_tree():
 	remove_control_from_docks(dock)
 	dock.queue_free()
-
