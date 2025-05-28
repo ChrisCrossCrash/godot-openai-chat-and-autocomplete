@@ -470,5 +470,6 @@ vertical_alignment = 2
 [connection signal="completion_error" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_error"]
 [connection signal="completion_received" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_received"]
 [connection signal="ChatReceived" from="LLMs/Gemini" to="." method="_on_lm_studio_completion_chat_received"]
+[connection signal="CompletionReceived" from="LLMs/Gemini" to="." method="_on_code_completion_received"]
 [connection signal="completion_error" from="LLMs/OllamaCompletion" to="." method="_on_code_completion_error"]
 [connection signal="completion_received" from="LLMs/OllamaCompletion" to="." method="_on_code_completion_received"]

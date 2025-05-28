@@ -10,6 +10,8 @@ signal completion_received(completion, pre, post)
 signal chat_received(text)
 signal completion_error(error)
 
+#Make an add function
+
 #Expects return value of String Array
 func _get_models():
 	return []

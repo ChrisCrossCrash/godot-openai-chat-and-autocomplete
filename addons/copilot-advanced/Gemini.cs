@@ -9,13 +9,13 @@ public partial class Gemini : Node
     [Export] public string URL { get; set; } = "";
     private const string GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta";
     private const string GEMINI_API_KEY = "AIzaSyArTBrAO7x8GGlhhHr9w_9VvdDdgEo78b4";
-    private const string GEMINI_MODEL = "gemini-2.0-flash-lite"; 
-    public string Model { get; private set; }
+    private const string GEMINI_MODEL = "gemini-2.0-flash-lite";
+    public string Model { get; private set; } = "gemini-2.0-flash-lite";
     public string CustomModelText { get; private set; }
     public bool AllowMultiline { get; private set; } = false;
 
     // Previous PROMPT_PREFIX constant remains unchanged
-        private const string PROMPT_PREFIX = @"**SYSTEM PROMPT: GodotGemini - GDScript 4.x Expert Coding Assistant**
+    private const string PROMPT_PREFIX = @"**SYSTEM PROMPT: GodotGemini - GDScript 4.x Expert Coding Assistant**
 
 **CRITICAL INSTRUCTION: ALL RESPONSES YOU GENERATE MUST BE ENTIRELY FORMATTED IN BBCODE. THIS IS NON-NEGOTIABLE. GDScript code blocks MUST ALWAYS be enclosed in `[code=gdscript]` ... `[/code]` tags for the Godot AI plugin to display them correctly. NO EXCEPTIONS.**
 
@@ -104,6 +104,56 @@ I hope this helps! Let me know if you need further assistance or have other ques
 ---
 
 **Final Check for Gemini: Before you provide your response, triple-check that ALL text is BBCode formatted, and ALL GDScript code is within `[code=gdscript]` and `[/code]` tags. This is critical for the plugin's functionality.**";
+
+    private const string FILL_IN_MIDDLE_SYSTEM_PROMPT =
+        @"**SYSTEM PROMPT: GodotGemini - GDScript 4.x Code Completion Specialist**
+
+**CRITICAL INSTRUCTION: WHEN A USER PROVIDES CODE WITH THE `##<GEMINI_COMPLETE_HERE>##` MARKER, YOUR RESPONSE MUST BE [b]ONLY[/b] THE COMPLETE, MERGED GDSCRIPT CODE. NO EXTRA TEXT, NO EXPLANATIONS, NO BBCODE, NO GREETINGS. JUST THE RAW, FUNCTIONAL GDSCRIPT CODE BLOCK.**
+
+**Your Persona & Role (Internal Guiding Principles):**
+You are **GodotGemini**, an exceptionally skilled GDScript 4.x coding assistant. Your primary function in ""completion mode"" (when the `##<GEMINI_COMPLETE_HERE>##` marker is present) is to seamlessly and accurately fill in the missing code. You prioritize correctness, efficiency, and adherence to Godot 4.x and GDScript 2.0 best practices.
+
+**Core Directives for Code Completion (When `##<GEMINI_COMPLETE_HERE>##` is present):**
+1.  **Strict Code-Only Output (ABSOLUTE REQUIREMENT):**
+    *   If the user's input contains `##<GEMINI_COMPLETE_HERE>##`, your entire output MUST be the resulting GDScript code.
+    *   Do NOT include any BBCode tags (e.g., `[code=gdscript]`, `[b]`, `[list]`).
+    *   Do NOT include any conversational text, explanations, greetings, or sign-offs.
+    *   The output should be directly pastable into a `.gd` file.
+2.  **Code Completion Logic:**
+    *   Identify the `##<GEMINI_COMPLETE_HERE>##` marker in the user's provided code.
+    *   Based on the user's request and the surrounding code (prefix and suffix), generate the necessary GDScript code to replace this marker.
+    *   Construct the final, complete GDScript by combining:
+        *   The user's code [b]prefix[/b] (everything before `##<GEMINI_COMPLETE_HERE>##`).
+        *   Your [b]generated code[/b].
+        *   The user's code [b]suffix[/b] (everything after `##<GEMINI_COMPLETE_HERE>##`).
+    *   This combined script is your SOLE output.
+3.  **GDScript 2.0 & Godot 4.x Exclusivity:**
+    *   ALL code you generate MUST be for **Godot 4.x** and use **GDScript 2.0** syntax.
+    *   **Utilize typed GDScript** (e.g., `variable: Type = value`, `func my_func(param: Type) -> ReturnType:`) whenever appropriate for clarity and error detection.
+    *   Reference Godot 4.x class names, methods, and properties accurately.
+4.  **Internal GDScript Knowledge (Apply when generating code):**
+    *   **Exports:** `@export var variable_name: Type`
+    *   **Node Naming:** `Node3D`, `CharacterBody2D/3D`, `AnimationPlayer`, etc.
+    *   **Properties:** `position`, `rotation`, `scale`.
+    *   **Random Numbers:** `randf_range(min, max)`, `randi_range(min, max)`.
+    *   **Signal Connection (Modern Syntax):**
+        *   Preferred: `node.signal_name.connect(method_name_on_same_node)`
+        *   Others: `node.signal_name.connect(target_node.method_name)`, `node.signal_name.connect(Callable(target_object, ""method_name_as_string""))`.
+        *   Lambdas: `node.signal_name.connect(func(args): ... )`
+    *   **Angle Conversions:** `rad_to_deg()`, `deg_to_rad()`.
+    *   **Byte Arrays:** `PackedByteArray`.
+    *   **Instancing:** `scene_resource.instantiate()`, `ClassName.new()`.
+    *   **Asynchronous Operations:** `await` with signals or functions returning `Signal`/`Object`.
+    *   **OnReady Variables:** `@onready var node_variable_name: NodeType = $Path/To/Node`.
+    *   **Groups:** `add_to_group()`, `get_tree().call_group()`.
+    *   **Built-in Functions:** `sin()`, `lerp()`, `move_toward()`, `is_instance_valid()`.
+    *   **Iterating:** `for item in array:`, `for i in range(number):`, `for i, value in enumerate(array_or_string):`.
+5.  **Clarity and Conciseness of Generated Code:**
+    *   The code you insert should be clear, idiomatic GDScript, and directly address the user's implicit or explicit request for the completion.
+    *   Avoid unnecessary complexity in the generated portion.
+**Final Check for Gemini (Internal): Before responding to a request with `##<GEMINI_COMPLETE_HERE>##`, ensure your output is *only* the complete, merged GDScript. No extra characters, no explanations, no BBCode. Just the code.**";
+
+    private const string COMPLETION_MARKER = "##<GEMINI_COMPLETE_HERE>##";
 
     private const int MAX_LENGTH = 15000;
 
@@ -209,7 +259,7 @@ I hope this helps! Let me know if you need further assistance or have other ques
         }
     }
 
-    public void SendUserPrompt(string userPrompt, string userSuffix)
+    public void _send_user_prompt(string userPrompt, string userSuffix)
     {
         try
         {
@@ -226,34 +276,70 @@ I hope this helps! Let me know if you need further assistance or have other ques
     {
         try
         {
-            GD.Print("Starting GetCompletion...");
-            string combinedPrompt = prompt + suffix;
-            int diff = combinedPrompt.Length - MAX_LENGTH;
+            GD.Print("Starting GetCompletion (Fill-in-the-middle)...");
 
-            if (diff > 0)
+            // 1. Construct the full code snippet with the marker
+            string codeWithMarker = prompt + COMPLETION_MARKER + suffix;
+
+            // 2. Construct the specific text prompt for Gemini's "user" role message
+            // This tells Gemini what to do with the provided code.
+            string userInstruction = "Complete missing code, in the cleanest way";
+            string userRolePrompt = $"The user wants to: \"{userInstruction}\".\n" +
+                                    $"Please complete the following GDScript code. I have provided a prefix, the marker `{COMPLETION_MARKER}` where the code should go, and a suffix. \n" +
+                                    "Your task is to generate the GDScript code that should replace the marker to fulfill the user's request. \n" +
+                                    "CRITICALLY: Your response MUST be ONLY the complete, merged GDScript code (prefix + your generated code + suffix), with NO other text, BBCode, or explanation.\n\n" +
+                                    "Here is the code structure:\n" +
+                                    codeWithMarker;
+
+            // 3. Trimming logic (applied to `userRolePrompt` as this is what goes into `contents`)
+            if (userRolePrompt.Length > MAX_LENGTH)
             {
-                GD.Print($"Prompt exceeds max length by {diff} characters, trimming...");
-                if (suffix.Length > diff)
+                int diff = userRolePrompt.Length - MAX_LENGTH;
+                GD.Print($"User content for Gemini exceeds max length by {diff} characters, trimming...");
+                // Simple trim from the end. More sophisticated trimming might be needed
+                // to preserve the crucial parts (marker, instruction) if it gets too long.
+                // For now, just trim from the end of the combined user prompt.
+                userRolePrompt = userRolePrompt.Substring(0, MAX_LENGTH);
+                // You might want to check if COMPLETION_MARKER is still in userRolePrompt after trimming.
+                if (!userRolePrompt.Contains(COMPLETION_MARKER))
                 {
-                    suffix = suffix.Substring(0, suffix.Length - diff);
-                }
-                else
-                {
-                    prompt = prompt.Substring(diff - suffix.Length);
-                    suffix = "";
+                    GD.PrintErr(
+                        "ERROR: Trimming removed the COMPLETION_MARKER. Completion will likely fail or be incorrect.");
+                    // Handle this error, maybe by not sending or notifying the user.
+                    EmitSignal(SignalName.CompletionError, "Input too long, critical marker removed during trimming.");
+                    return;
                 }
             }
 
+            // 4. Prepare the 'contents' for Gemini
+            // For fill-in-the-middle, we send a fresh context, not necessarily _chatHistory,
+            // unless you specifically want the completion to be aware of prior conversation.
+            // For pure code insertion, a clean slate is often better.
+            var contents = new List<object>
+            {
+                new Dictionary<string, object>
+                {
+                    { "role", "user" },
+                    {
+                        "parts", new List<Dictionary<string, string>>
+                        {
+                            new() { { "text", userRolePrompt } }
+                        }
+                    }
+                }
+            };
+
             var body = new Dictionary<string, object>
             {
-                { "contents", _chatHistory },
+                { "contents", contents },
                 {
                     "system_instruction", new Dictionary<string, object>
                     {
                         {
                             "parts", new List<Dictionary<string, string>>
                             {
-                                new Dictionary<string, string> { { "text", PROMPT_PREFIX } }
+                                // Use the system prompt that demands ONLY code output
+                                new() { { "text", FILL_IN_MIDDLE_SYSTEM_PROMPT } }
                             }
                         }
                     }
@@ -261,12 +347,13 @@ I hope this helps! Let me know if you need further assistance or have other ques
                 {
                     "generation_config", new Dictionary<string, object>
                     {
-                        { "max_output_tokens", 1000 },
-                        { "temperature", 1 }
+                        { "max_output_tokens", 2048 }, // Max tokens for the AI's response
+                        { "temperature", 0.3 }, // Lower for more deterministic code
+                        { "top_p", 0.9 }, // Nucleus sampling
+                        // "stop_sequences": ["\n```\n"] // Optional: if you notice it adding extra stuff
                     }
                 }
             };
-
             string[] headers = { "Content-Type: application/json" };
 
             var httpRequest = new HttpRequest();
@@ -275,9 +362,10 @@ I hope this helps! Let me know if you need further assistance or have other ques
                 OnRequestCompleted(result, responseCode, headers, body, prompt, suffix, httpRequest);
 
             string jsonBody = JsonSerializer.Serialize(body);
-            GD.Print("Sending HTTP request...");
+            GD.Print(
+                $"Sending HTTP request to URL: https://generativelanguage.googleapis.com/v1beta/models/"+Model+":generateContent?key="+GEMINI_API_KEY);
             Error error = httpRequest.Request(
-                $"https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:${GENERATE_CONTENT_API}?key=${GEMINI_API_KEY}",
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key="+GEMINI_API_KEY,
                 headers,
                 HttpClient.Method.Post,
                 jsonBody
@@ -303,17 +391,51 @@ I hope this helps! Let me know if you need further assistance or have other ques
         try
         {
             GD.Print($"Request completed with response code: {responseCode}");
+            
+            if (responseCode < 200 || responseCode >= 300)
+            {
+                GD.PrintErr($"Request failed with response code: {responseCode}");
+                EmitSignal(SignalName.CompletionError, null);
+                return;
+            }
+            
             string responseText = System.Text.Encoding.UTF8.GetString(body);
             Godot.Collections.Dictionary response = Json.ParseString(responseText).AsGodotDictionary();
 
-            if (!response.ContainsKey("response"))
+            if (!response.ContainsKey("candidates"))
             {
-                GD.PrintErr("Response does not contain 'response' key");
+                GD.PrintErr("Response does not contain 'candidates' key");
+                GD.PrintErr($"Response: {responseText}");
                 EmitSignal(SignalName.CompletionError, response);
                 return;
             }
 
-            var completion = response["response"];
+            Godot.Collections.Array candidates = response["candidates"].AsGodotArray();
+            Godot.Collections.Dictionary firstCandidate = candidates[0].AsGodotDictionary();
+            Variant content = firstCandidate["content"];
+            Godot.Collections.Dictionary contentDict = content.AsGodotDictionary();
+
+            if (!contentDict.ContainsKey("parts"))
+            {
+                EmitSignal(SignalName.CompletionError, "Missing 'parts' key in content");
+                return;
+            }
+
+            var parts = contentDict["parts"].AsGodotArray();
+            if (parts.Count == 0)
+            {
+                EmitSignal(SignalName.CompletionError, "Empty parts array");
+                return;
+            }
+
+            var firstPart = parts[0].AsGodotDictionary();
+            if (!firstPart.ContainsKey("text"))
+            {
+                EmitSignal(SignalName.CompletionError, "Missing 'text' key in first part");
+                return;
+            }
+
+            string completion = firstPart["text"].AsString();
 
             if (IsInstanceValid(httpRequest))
             {
@@ -368,7 +490,7 @@ I hope this helps! Let me know if you need further assistance or have other ques
                         {
                             "parts", new List<Dictionary<string, string>>
                             {
-                                new Dictionary<string, string> { { "text", PROMPT_PREFIX } }
+                                new() { { "text", PROMPT_PREFIX } }
                             }
                         }
                     }
@@ -391,7 +513,7 @@ I hope this helps! Let me know if you need further assistance or have other ques
             string jsonBody = JsonSerializer.Serialize(body);
             GD.Print("Sending chat message request...");
             Error error = httpRequest.Request(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=" +
+                "https://generativelanguage.googleapis.com/v1beta/models/$MODE:generateContent?key=" +
                 GEMINI_API_KEY,
                 headers,
                 HttpClient.Method.Post,
@@ -432,27 +554,37 @@ I hope this helps! Let me know if you need further assistance or have other ques
             Variant content = firstCandidate["content"];
             Godot.Collections.Dictionary contentDict = content.AsGodotDictionary();
 
-            if (!contentDict.ContainsKey("parts")) {
+            if (!contentDict.ContainsKey("parts"))
+            {
                 EmitSignal(SignalName.CompletionError, "Missing 'parts' key in content");
                 return;
             }
+
             var parts = contentDict["parts"].AsGodotArray();
-            if (parts.Count == 0) {
+            if (parts.Count == 0)
+            {
                 EmitSignal(SignalName.CompletionError, "Empty parts array");
                 return;
             }
+
             var firstPart = parts[0].AsGodotDictionary();
-            if (!firstPart.ContainsKey("text")) {
+            if (!firstPart.ContainsKey("text"))
+            {
                 EmitSignal(SignalName.CompletionError, "Missing 'text' key in first part");
                 return;
             }
+
             string messageText = firstPart["text"].AsString();
-            
-            _chatHistory.Insert(0, new Dictionary<string, object> {
+
+            _chatHistory.Insert(0, new Dictionary<string, object>
+            {
                 { "role", "model" },
-                { "parts", new List<Dictionary<string, string>> {
-                    new Dictionary<string, string> { { "text", messageText } }
-                }}
+                {
+                    "parts", new List<Dictionary<string, string>>
+                    {
+                        new Dictionary<string, string> { { "text", messageText } }
+                    }
+                }
             });
 
             GD.Print("Emitting chat received signal");

@@ -238,11 +238,13 @@ func get_code_editor():
 	return null
 
 func request_completion():
+	print("[PLUGIN] - request completition")
 	#Get current code and request completion from active model
-	if request_code_state: return
-	update_loading_indicator(true)
+	#if request_code_state: return
+	#update_loading_indicator(true)
 	var pre_post = get_pre_post()
 	var llm = get_llm()
+	print("[PLUGIN] - llm found")
 	if !llm: return
 	llm._send_user_prompt(pre_post[0], pre_post[1])
 	request_code_state = pre_post
@@ -302,6 +304,7 @@ func set_shortcut_key(key):
 
 func _on_code_completion_received(completion, pre, post):
 	#Attempt to insert received code completion
+	print("Passo qui")
 	remove_loading_indicator()
 	if matches_request_state(pre, post):
 		insert_completion(completion, pre, post)
@@ -462,9 +465,14 @@ func _geminiModelLoaded(result, response_code, headers, body):
 	test_json_conv.parse(body.get_string_from_utf8())
 	var json = test_json_conv.get_data()
 	model_select.clear()
+	var i: int = 0
+	var selectedModel: int = 0
 	for model in json.models:
+		i = i+1
 		model_select.add_item(model.name)
-	model_select.select(0)
+		if model.name == "models/gemini-2.0-flash":
+			selectedModel = i-1;
+	model_select.select(selectedModel)
 
 func _on_texture_button_button_down() -> void:
 	#Refresh model based on provider
