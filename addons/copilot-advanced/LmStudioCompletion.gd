@@ -104,6 +104,7 @@ func chat_message(newText:String):
 	add_child(http_request)
 	http_request.connect("request_completed",on_chat_complete)
 	var json_body = JSON.stringify(body)
+	print_rich("[b]chat_message[/b] - Calling url:", URL+"/v1/chat/completions", " - ", body)
 	var error = http_request.request(URL+"/v1/chat/completions", headers, HTTPClient.METHOD_POST, json_body)
 	if error != OK:
 		emit_signal("completion_error", null)

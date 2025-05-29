@@ -375,6 +375,7 @@ func apply_by_value(option_button, value):
 
 func _on_provider_item_selected(index: int) -> void:
 	provider = index
+	_on_send_chat_message_2_pressed()
 	match index:
 		0:
 			urlContainer.visible = true
@@ -420,6 +421,7 @@ func _ollamaModelLoaded(result, response_code, headers, body):
 	for model in json.models:
 		model_select.add_item(model.model)
 	model_select.select(0)
+	lmStudioCompletions._set_model(json.models[0].model)
 
 
 func updateLmStudioModel():
@@ -447,6 +449,7 @@ func _lmStudioModelLoaded(result, response_code, headers, body):
 	for model in json.data:
 		model_select.add_item(model.id)
 	model_select.select(0)
+	lmStudioCompletions._set_model(json.data[0].id)
 
 func updateGeminiModel():
 	reloadButton.visible = false
