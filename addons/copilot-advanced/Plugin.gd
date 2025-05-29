@@ -10,7 +10,7 @@ var editor_interface = EditorInterface
 func _enter_tree() -> void:
 	if(!dock):
 		dock = load(scene_path).instantiate()
-		add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_BL, dock)
+		add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, dock)
 		main_screen_changed.connect(Callable(dock, "on_main_screen_changed"))
 		dock.editor_interface = EditorInterface
 

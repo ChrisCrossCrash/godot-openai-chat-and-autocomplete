@@ -41,6 +41,7 @@ var indicator = null
 var models = {}
 var openai_api_key
 var cur_model
+var apiKey
 var provider
 var cur_shortcut_modifier = "Control" if is_mac() else "Alt"
 var cur_shortcut_key = "C"
@@ -238,20 +239,23 @@ func get_code_editor():
 	return null
 
 func request_completion():
-	print("[PLUGIN] - request completition")
+	print_rich("[b]request_completion[/b] - Asking to complete the code")
 	#Get current code and request completion from active model
 	#if request_code_state: return
 	#update_loading_indicator(true)
 	var pre_post = get_pre_post()
 	var llm = get_llm()
-	print("[PLUGIN] - llm found")
+	print_rich("[b]request_completion[/b] - LLM found", llm)
 	if !llm: return
 	llm._send_user_prompt(pre_post[0], pre_post[1])
 	request_code_state = pre_post
 
+
+#Make an add function
+
 func get_pre_post():
 	#Split current code based on caret position
-	var editor = get_code_editor()
+	var editor: Control = get_code_editor()
 	var text = editor.get_text()
 	var pos = Vector2(editor.get_caret_line(), editor.get_caret_column())
 	var pre = ""
@@ -272,16 +276,10 @@ func get_llm():
 	match providerInput.selected:
 		0:
 			llm = ollamaCompletions
-			llm._set_model(cur_model)
-			llm._set_multiline(allow_multiline)
 		1:
 			llm = lmStudioCompletions
-			llm._set_model(cur_model)
-			llm._set_multiline(allow_multiline)
 		2:
 			llm = geminiCompletions
-			llm.SetModel(cur_model)
-			llm.SetMultiline(allow_multiline)
 	return llm
 
 func matches_request_state(pre, post):
@@ -290,7 +288,10 @@ func matches_request_state(pre, post):
 
 func set_model(model_name):
 	#Apply selected model
+	print_rich("[b]set_model[/b] - Setted model: ", model_name)
 	cur_model = model_name
+	var llm = get_llm()
+	llm._set_model(model_name)
 
 
 func set_shortcut_modifier(modifier):
@@ -304,7 +305,7 @@ func set_shortcut_key(key):
 
 func _on_code_completion_received(completion, pre, post):
 	#Attempt to insert received code completion
-	print("Passo qui")
+	print_rich("[b]_on_code_completion_received[/b] - Checking parameter: ", completion)
 	remove_loading_indicator()
 	if matches_request_state(pre, post):
 		insert_completion(completion, pre, post)
@@ -341,6 +342,7 @@ func store_config():
 	config.set_value("preferences", "provider", provider)
 	config.set_value("preferences", "shortcut_modifier", cur_shortcut_modifier)
 	config.set_value("preferences", "shortcut_key", cur_shortcut_key)
+	config.set_value("preferences", "apiKey", apiKey)
 	config.save_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
 
 func load_config():
@@ -350,6 +352,8 @@ func load_config():
 	if err != OK: return
 	cur_model = config.get_value("preferences", "model", cur_model)
 	provider = config.get_value("preferences", "provider", provider)
+	apiKey = config.get_value("preferences", "apiKey", apiKey)
+	apiKeyInput.text = apiKey
 	providerInput.selected = provider
 	apply_by_value(model_select, cur_model)
 	set_model(model_select.get_item_text(model_select.selected))
@@ -359,6 +363,7 @@ func load_config():
 	apply_by_value(shortcut_key_select, cur_shortcut_key)
 	lmStudioCompletions._set_url(urlTextInput.text)
 	ollamaCompletions._set_url(urlTextInput.text)
+	geminiCompletions._set_api_key(apiKey)
 	_on_provider_item_selected(providerInput.selected)
 	
 
@@ -449,12 +454,13 @@ func updateGeminiModel():
 	var http_request = HTTPRequest.new()
 	add_child(http_request)
 	http_request.connect("request_completed",self._geminiModelLoaded)
-	var error = http_request.request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=50&pageToken=&key="+apiKeyInput.text)
+	var error = http_request.request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=50&pageToken=&key="+apiKey)
 	if error != OK:
 		reloadButton.visible = true
 		loadingIndicator.visible = false
 		pass
 		# handle the error
+
 
 func _geminiModelLoaded(result, response_code, headers, body):
 	reloadButton.visible = true
@@ -472,10 +478,12 @@ func _geminiModelLoaded(result, response_code, headers, body):
 		model_select.add_item(model.name)
 		if model.name == "models/gemini-2.0-flash":
 			selectedModel = i-1;
+			geminiCompletions._set_model(model.name)
 	model_select.select(selectedModel)
 
 func _on_texture_button_button_down() -> void:
 	#Refresh model based on provider
+	print_rich("[b]_on_texture_button_button_down[/b] - Loading new model for provider: ",providerInput.selected)
 	match providerInput.selected:
 		0:
 			self.updateOllamaModel()
@@ -487,6 +495,7 @@ func _on_texture_button_button_down() -> void:
 
 
 func _on_url_text_changed(new_text: String) -> void:
+	print_rich("[b]_on_url_text_changed[/b] - Changing text: ",new_text," for provider: ",providerInput.selected)
 	match providerInput.selected:
 		0:
 			ollamaCompletions._set_url(new_text)
@@ -495,7 +504,10 @@ func _on_url_text_changed(new_text: String) -> void:
 			lmStudioCompletions._set_url(new_text)
 			pass
 		2:
+			apiKey = new_text
+			geminiCompletions._set_api_key(new_text)
 			pass
+	store_config()
 
 
 func _on_check_button_toggled(toggled_on: bool) -> void:
@@ -551,6 +563,7 @@ func _userMessage(text:String ) -> void:
 	chatSection.scroll_vertical = chatSection.get_v_scroll_bar().max_value
 
 func _on_send_chat_message_pressed() -> void:
+	print_rich("[b]_on_send_chat_message_pressed[/b] - Sending message")
 	#Send chat message
 	if !inputChat:
 		inputChat = get_node("%InputChat")
@@ -562,10 +575,10 @@ func _on_send_chat_message_pressed() -> void:
 
 
 func _on_send_chat_message_2_pressed() -> void:
+	get_llm()._clean_chat()
 	for c in chatContainer.get_children():
 		c.queue_free()
 
 
 func _on_lm_studio_completion_chat_received(text: Variant) -> void:
-	print("DANSJK")
 	_botMessage(text)

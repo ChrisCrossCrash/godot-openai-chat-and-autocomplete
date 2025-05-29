@@ -34,13 +34,6 @@ const CHAT_PREFIX = """#This is a GDScript script using Godot 4.x.
 """
 const MAX_LENGTH = 15000
 
-var chat_history: Array = [ 
-	{ "role": "system", "content": CHAT_PREFIX },
-]
-
-func _set_model(model_name):
-	model = model_name
-
 func _set_url(url):
 	URL = url
 
@@ -127,3 +120,10 @@ func on_chat_complete(result, response_code, headers, body):
 	var completion = response.choices[0].message
 	chat_history.push_front(completion)
 	emit_signal("chat_received", completion.content)
+
+
+func _clean_chat():
+	print_rich("[b]_clean_chat[/b] - Deleting chat history")
+	chat_history = [
+	{ "role": "system", "content": CHAT_PREFIX },
+	]

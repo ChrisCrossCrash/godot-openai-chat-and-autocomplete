@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://bglmfig6w4833" path="res://addons/copilot-advanced/asset/Check.png" id="5_446lv"]
 [ext_resource type="Theme" uid="uid://b8ev0etxsbepm" path="res://addons/copilot-advanced/asset/BotTheme.tres" id="6_n0bkr"]
 [ext_resource type="Script" uid="uid://c4w7is8s0l81m" path="res://addons/copilot-advanced/OllamaCompletion.gd" id="7_84eej"]
-[ext_resource type="Script" uid="uid://cxbmkmnnl1o5v" path="res://addons/copilot-advanced/Gemini.cs" id="8_urx8c"]
+[ext_resource type="Script" uid="uid://b0klth4o6ymok" path="res://addons/copilot-advanced/GeminiCompletion.gd" id="8_urx8c"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f4c1j"]
 bg_color = Color(0.152941, 0.152941, 0.152941, 0.623529)
@@ -152,7 +152,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 size_flags_horizontal = 10
-text = "http://127.0.0.1:1234"
+placeholder_text = "Fill with api key"
 
 [node name="UrlContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
 unique_name_in_owner = true
@@ -369,6 +369,7 @@ unique_name_in_owner = true
 layout_mode = 2
 
 [node name="Label" type="RichTextLabel" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer2/ChatContainer"]
+visible = false
 layout_mode = 2
 size_flags_vertical = 0
 focus_mode = 2
@@ -469,7 +470,9 @@ vertical_alignment = 2
 [connection signal="chat_received" from="LLMs/LmStudioCompletion" to="." method="_on_lm_studio_completion_chat_received"]
 [connection signal="completion_error" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_error"]
 [connection signal="completion_received" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_received"]
-[connection signal="ChatReceived" from="LLMs/Gemini" to="." method="_on_lm_studio_completion_chat_received"]
-[connection signal="CompletionReceived" from="LLMs/Gemini" to="." method="_on_code_completion_received"]
+[connection signal="chat_received" from="LLMs/Gemini" to="." method="_on_lm_studio_completion_chat_received"]
+[connection signal="completion_error" from="LLMs/Gemini" to="." method="_on_code_completion_error"]
+[connection signal="completion_received" from="LLMs/Gemini" to="." method="_on_code_completion_received"]
+[connection signal="chat_received" from="LLMs/OllamaCompletion" to="." method="_on_lm_studio_completion_chat_received"]
 [connection signal="completion_error" from="LLMs/OllamaCompletion" to="." method="_on_code_completion_error"]
 [connection signal="completion_received" from="LLMs/OllamaCompletion" to="." method="_on_code_completion_received"]
