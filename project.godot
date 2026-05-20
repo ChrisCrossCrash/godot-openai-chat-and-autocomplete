@@ -19,10 +19,6 @@ run/main_scene="uid://rv5dl08lcb8e"
 config/features=PackedStringArray("4.6")
 config/icon="res://icon.png"
 
-[dotnet]
-
-project/assembly_name="Godot Copilot"
-
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/copilot-advanced/plugin.cfg")
