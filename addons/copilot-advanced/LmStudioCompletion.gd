@@ -2,20 +2,21 @@
 extends "res://addons/copilot-advanced/LLM.gd"
 
 @onready var URL : String  = ""
-const PROMPT_PREFIX = """#This is a GDScript script using Godot 4.x.
-#That means the new GDScript 2.0 syntax is used. Here's a couple of important changes that were introduced:
-#- Use @export annotation for exports
-#- Use Node3D instead of Spatial, and position instead of translation
-#- Use randf_range and randi_range instead of rand_range
-#- Connect signals via node.SIGNAL_NAME.connect(Callable(TARGET_OBJECT, TARGET_FUNC))
-#- Connect signals via node.SIGNAL_NAME.connect(Callable(TARGET_OBJECT, TARGET_FUNC))
-#- Use rad_to_deg instead of rad2deg
-#- Use PackedByteArray instead of PoolByteArray
-#- Use instantiate instead of instance
-#- You can't use enumerate(OBJECT). Instead, use "for i in len(OBJECT):"
-#
-#Remember, this is not Python. It's GDScript for use in Godot.
-"""
+const INSERT_TAG = "!INSERT_CODE_HERE!"
+const COMPLETION_SYSTEM = """You are a code completion assistant for GDScript in Godot 4.x (GDScript 2.0 syntax).
+Key syntax rules:
+- Use @export annotation for exports
+- Use Node3D instead of Spatial, and position instead of translation
+- Use randf_range and randi_range instead of rand_range
+- Connect signals via node.SIGNAL_NAME.connect(Callable(TARGET_OBJECT, TARGET_FUNC))
+- Use rad_to_deg instead of rad2deg
+- Use PackedByteArray instead of PoolByteArray
+- Use instantiate instead of instance
+- You can't use enumerate(OBJECT). Instead, use "for i in len(OBJECT):"
+
+Remember, this is not Python. It's GDScript for use in Godot.
+
+You may only respond with code, never add explanations. The user message contains a !INSERT_CODE_HERE! tag. Only respond with code to insert at that point. Never repeat the full script — only the inserted portion. Treat this as autocompletion: continue any unfinished word or expression before the tag. Match the surrounding indentation exactly."""
 const CHAT_PREFIX = """#This is a GDScript script using Godot 4.x.
 #That means the new GDScript 2.0 syntax is used. Here's a couple of important changes that were introduced:
 #- Use @export annotation for exports
@@ -47,14 +48,17 @@ func get_completion(_prompt, _suffix):
 	var diff = combined_prompt.length() - MAX_LENGTH
 	if diff > 0:
 		if suffix.length() > diff:
-			suffix = suffix.substr(0,diff)
+			suffix = suffix.substr(0, diff)
 		else:
 			prompt = prompt.substr(diff - suffix.length())
 			suffix = ""
+	var messages = [
+		{"role": "system", "content": COMPLETION_SYSTEM},
+		{"role": "user", "content": prompt + INSERT_TAG + suffix}
+	]
 	var body = {
 		"model": model,
-		"prompt": PROMPT_PREFIX + prompt,
-		"suffix": suffix,
+		"messages": messages,
 		"temperature": 0.5,
 		"max_tokens": 500,
 		"stop": "\n\n" if allow_multiline else "\n"
@@ -64,9 +68,9 @@ func get_completion(_prompt, _suffix):
 	]
 	var http_request = HTTPRequest.new()
 	add_child(http_request)
-	http_request.connect("request_completed",on_request_completed.bind(prompt, suffix, http_request))
+	http_request.connect("request_completed", on_request_completed.bind(prompt, suffix, http_request))
 	var json_body = JSON.stringify(body)
-	var error = http_request.request(URL+"/v1/completions", headers, HTTPClient.METHOD_POST, json_body)
+	var error = http_request.request(URL + "/v1/chat/completions", headers, HTTPClient.METHOD_POST, json_body)
 	if error != OK:
 		emit_signal("completion_error", null)
 
@@ -78,7 +82,7 @@ func on_request_completed(result, response_code, headers, body, pre, post, http_
 	if !response.has("choices"):
 		emit_signal("completion_error", response)
 		return
-	var completion = response.choices[0].text
+	var completion = response.choices[0].message.content
 	if is_instance_valid(http_request):
 		http_request.queue_free()
 	emit_signal("completion_received", completion, pre, post)
