@@ -1,7 +1,5 @@
 # Godot Copilot Selfhost (Based on https://github.com/minosvasilias/godot-copilot)
 
-![Godot Copilot Selfhost logo](public_assets/logo500.png)
-
 AI-assisted development for the Godot engine.
 
 Compatible with `4.x`.
