@@ -8,6 +8,30 @@ Godot Copilot Selfhost is a Godot 4.x editor addon that provides AI-assisted cod
 
 To develop: open the project in Godot 4.6+, then enable the addon in **Project Settings > Plugins > "Copilot selfhost"**. No build step is needed for GDScript changes. Restart the editor after modifying [Plugin.gd](addons/copilot-advanced/Plugin.gd) or [CopilotUI.tscn](addons/copilot-advanced/CopilotUI.tscn).
 
+## Testing
+
+Tests use **GUT (Godot Unit Testing)**, installed as `addons/gut`. Test files live in `tests/` and must be named `test_*.gd`.
+
+**Run tests inside the editor**: open the GUT panel (bottom dock) and click **Run All** or **Run at Cursor**.
+
+**Run tests from the command line** (headless):
+```
+godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/ -ginclude_subdirs -gexit
+```
+
+**Write a new test file**:
+```gdscript
+extends GutTest
+
+func before_each():
+    # setup per-test state
+
+func test_something():
+    assert_eq(actual, expected)
+```
+
+GUT configuration (search dirs, prefix/suffix) is in [.gut_editor_config.json](.gut_editor_config.json).
+
 ## Architecture
 
 The addon lives entirely in [addons/copilot-advanced/](addons/copilot-advanced/) and follows a provider-based design with signal-driven communication.
