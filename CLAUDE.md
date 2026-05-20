@@ -51,12 +51,8 @@ The addon lives entirely in [addons/copilot-advanced/](addons/copilot-advanced/)
 | File | Provider | Endpoints |
 |------|----------|-----------|
 | [OllamaCompletion.gd](addons/copilot-advanced/OllamaCompletion.gd) | Ollama | `/api/generate`, `/api/chat` |
-| [LmStudioCompletion.gd](addons/copilot-advanced/LmStudioCompletion.gd) | LM Studio | `/v1/completions`, `/v1/chat/completions` |
+| [LmStudioCompletion.gd](addons/copilot-advanced/LmStudioCompletion.gd) | LM Studio (OpenAI-compatible) | `/v1/completions`, `/v1/chat/completions` |
 | [GeminiCompletion.gd](addons/copilot-advanced/GeminiCompletion.gd) | Google Gemini | `generativelanguage.googleapis.com/v1beta` |
-| [OpenAIChat.gd](addons/copilot-advanced/OpenAIChat.gd) | OpenAI-compatible | `/v1/chat/completions` |
-| [GithubCopilot.gd](addons/copilot-advanced/GithubCopilot.gd) | GitHub Copilot | legacy, not wired into the dropdown |
-
-**Important**: `OpenAIChat.gd` exists but is **not currently wired** into `get_llm()` in `Copilot.gd` — the provider dropdown only maps indices 0=Ollama, 1=LmStudio, 2=Gemini.
 
 ### Signal Connections
 
@@ -98,7 +94,6 @@ Each provider uses a different approach to indicate the insertion point:
 | Ollama | `##<GEMINI_COMPLETE_HERE>##` marker concatenated between prefix and suffix |
 | LM Studio | `PROMPT_PREFIX` prepended; native FIM via `prompt`+`suffix` fields |
 | Gemini | `##<GEMINI_COMPLETE_HERE>##` marker in `contents`, system prompt via `system_instruction` |
-| OpenAI | `!INSERT_CODE_HERE!` marker inserted between prefix and suffix |
 
 ### Key Behaviors
 
