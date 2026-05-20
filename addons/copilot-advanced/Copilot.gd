@@ -188,7 +188,7 @@ func _process(delta):
 	update_loading_indicator()
 
 func update_highlights():
-	#Make sure highlighted lines persist until explicitely removed
+	#Make sure highlighted lines persist until explicitly removed
 	#via key input
 	if cur_highlight:
 		var editor = get_code_editor()
