@@ -198,9 +198,9 @@ func chat_message(newText:String):
 	chat_history.push_back({
 			  "role": "user",
 			  "content": newText
-			})	
+			})
 	var body = {
-		  "model": model, 
+		  "model": model,
 		  "messages": chat_history,
 		  "stream": false
 		}

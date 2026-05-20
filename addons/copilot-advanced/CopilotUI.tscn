@@ -1,14 +1,14 @@
-[gd_scene load_steps=12 format=3 uid="uid://rv5dl08lcb8e"]
+[gd_scene format=3 uid="uid://rv5dl08lcb8e"]
 
-[ext_resource type="Script" uid="uid://b81eyjsixilbv" path="res://addons/copilot-advanced/Copilot.gd" id="1_pq1gj"]
+[ext_resource type="Script" uid="uid://c35v6d8uydrkn" path="res://addons/copilot-advanced/Copilot.gd" id="1_pq1gj"]
 [ext_resource type="Material" uid="uid://cccmbprav6vgu" path="res://addons/copilot-advanced/small_icon.tres" id="2_gdw4j"]
-[ext_resource type="Script" uid="uid://dsjpmklb6juib" path="res://addons/copilot-advanced/LmStudioCompletion.gd" id="3_loa2x"]
+[ext_resource type="Script" uid="uid://yi83aic4bisd" path="res://addons/copilot-advanced/LmStudioCompletion.gd" id="3_loa2x"]
 [ext_resource type="Material" uid="uid://bl1rtf743e4l3" path="res://addons/copilot-advanced/large_icon.tres" id="3_xn70b"]
 [ext_resource type="Texture2D" uid="uid://dgko4rse8ssdn" path="res://addons/copilot-advanced/asset/refresh.png" id="4_sh1u6"]
 [ext_resource type="Texture2D" uid="uid://bglmfig6w4833" path="res://addons/copilot-advanced/asset/Check.png" id="5_446lv"]
 [ext_resource type="Theme" uid="uid://b8ev0etxsbepm" path="res://addons/copilot-advanced/asset/BotTheme.tres" id="6_n0bkr"]
-[ext_resource type="Script" uid="uid://c4w7is8s0l81m" path="res://addons/copilot-advanced/OllamaCompletion.gd" id="7_84eej"]
-[ext_resource type="Script" uid="uid://b0klth4o6ymok" path="res://addons/copilot-advanced/GeminiCompletion.gd" id="8_urx8c"]
+[ext_resource type="Script" uid="uid://bdqm2d3vyaq1q" path="res://addons/copilot-advanced/OllamaCompletion.gd" id="7_84eej"]
+[ext_resource type="Script" uid="uid://dji5yp4mxxenr" path="res://addons/copilot-advanced/GeminiCompletion.gd" id="8_urx8c"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f4c1j"]
 bg_color = Color(0.152941, 0.152941, 0.152941, 0.623529)
@@ -17,7 +17,7 @@ shadow_size = 1
 [sub_resource type="Theme" id="Theme_krmud"]
 Label/styles/normal = SubResource("StyleBoxFlat_f4c1j")
 
-[node name="Copilot" type="Control"]
+[node name="Copilot" type="Control" unique_id=2105355940]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,19 +28,19 @@ script = ExtResource("1_pq1gj")
 icon_shader = ExtResource("2_gdw4j")
 highlight_color = Color(0.223529, 0.254902, 0.298039, 1)
 
-[node name="VBoxParent" type="VBoxContainer" parent="."]
+[node name="VBoxParent" type="VBoxContainer" parent="." unique_id=895627243]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Indicator" type="ColorRect" parent="VBoxParent"]
+[node name="Indicator" type="ColorRect" parent="VBoxParent" unique_id=954492675]
 visible = false
 material = ExtResource("3_xn70b")
 custom_minimum_size = Vector2(200, 200)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="ContextTitle" type="Label" parent="VBoxParent"]
+[node name="ContextTitle" type="Label" parent="VBoxParent" unique_id=1444124081]
 visible = false
 modulate = Color(1, 1, 1, 0.7)
 layout_mode = 2
@@ -49,14 +49,14 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="Context" type="Label" parent="VBoxParent"]
+[node name="Context" type="Label" parent="VBoxParent" unique_id=406468785]
 visible = false
 layout_mode = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="Status" type="Label" parent="VBoxParent"]
+[node name="Status" type="Label" parent="VBoxParent" unique_id=346100403]
 visible = false
 modulate = Color(1, 1, 1, 0.7)
 custom_minimum_size = Vector2(2.08165e-12, 100)
@@ -65,46 +65,46 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="HowToTitle" type="Label" parent="VBoxParent"]
+[node name="HowToTitle" type="Label" parent="VBoxParent" unique_id=1198081767]
 visible = false
 layout_mode = 2
 text = "How To Use"
 
-[node name="Separator1" type="HSeparator" parent="VBoxParent"]
+[node name="Separator1" type="HSeparator" parent="VBoxParent" unique_id=1774327225]
 visible = false
 layout_mode = 2
 
-[node name="HowTo" type="Label" parent="VBoxParent"]
+[node name="HowTo" type="Label" parent="VBoxParent" unique_id=1956083070]
 visible = false
 layout_mode = 2
 text = "Press the selected shortcut in the code editor to request a completion from Copilot at the current caret position"
 autowrap_mode = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent" unique_id=184218343]
 layout_mode = 2
 
-[node name="SettingTitle" type="Label" parent="VBoxParent/HBoxContainer"]
+[node name="SettingTitle" type="Label" parent="VBoxParent/HBoxContainer" unique_id=1255727247]
 layout_mode = 2
 text = "Settings"
 
-[node name="CheckButton" type="CheckButton" parent="VBoxParent/HBoxContainer"]
+[node name="CheckButton" type="CheckButton" parent="VBoxParent/HBoxContainer" unique_id=2075521970]
 layout_mode = 2
 button_pressed = true
 alignment = 2
 icon_alignment = 2
 
-[node name="Separator2" type="HSeparator" parent="VBoxParent"]
+[node name="Separator2" type="HSeparator" parent="VBoxParent" unique_id=1323247447]
 layout_mode = 2
 
-[node name="SettingsCollapsable" type="VBoxContainer" parent="VBoxParent"]
+[node name="SettingsCollapsable" type="VBoxContainer" parent="VBoxParent" unique_id=1387880075]
 layout_mode = 2
 
-[node name="Provider" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
+[node name="Provider" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable" unique_id=405181592]
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/Provider"]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/Provider" unique_id=1852996296]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -113,10 +113,10 @@ text = "Select a provider"
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/Provider"]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/Provider" unique_id=1519712974]
 layout_mode = 2
 
-[node name="provider" type="OptionButton" parent="VBoxParent/SettingsCollapsable/Provider"]
+[node name="provider" type="OptionButton" parent="VBoxParent/SettingsCollapsable/Provider" unique_id=888776311]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 10
@@ -130,13 +130,13 @@ popup/item_1/id = 1
 popup/item_2/text = "Gemini"
 popup/item_2/id = 2
 
-[node name="ApiKeyContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
+[node name="ApiKeyContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable" unique_id=2082535012]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer"]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer" unique_id=591040839]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -144,24 +144,25 @@ size_flags_vertical = 1
 text = "Gemini api key"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer"]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer" unique_id=480297949]
 layout_mode = 2
 
-[node name="API_KEY" type="LineEdit" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer"]
+[node name="API_KEY" type="LineEdit" parent="VBoxParent/SettingsCollapsable/ApiKeyContainer" unique_id=1708050268]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 size_flags_horizontal = 10
+text = "<null>"
 placeholder_text = "Fill with api key"
 
-[node name="UrlContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
+[node name="UrlContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable" unique_id=435141524]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/UrlContainer"]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/UrlContainer" unique_id=2124791486]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -169,22 +170,22 @@ size_flags_vertical = 1
 text = "Server URL"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/UrlContainer"]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/UrlContainer" unique_id=916690413]
 layout_mode = 2
 
-[node name="URL" type="LineEdit" parent="VBoxParent/SettingsCollapsable/UrlContainer"]
+[node name="URL" type="LineEdit" parent="VBoxParent/SettingsCollapsable/UrlContainer" unique_id=2005378182]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 size_flags_horizontal = 10
 text = "http://127.0.0.1:1234"
 
-[node name="SelectModel" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
+[node name="SelectModel" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable" unique_id=1495536839]
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/SelectModel"]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=1827510546]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -192,22 +193,22 @@ size_flags_vertical = 1
 text = "Model"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/SelectModel"]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=428845826]
 layout_mode = 2
 
-[node name="Model" type="OptionButton" parent="VBoxParent/SettingsCollapsable/SelectModel"]
+[node name="Model" type="OptionButton" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=833070162]
 layout_mode = 2
 size_flags_horizontal = 10
 fit_to_longest_item = false
 
-[node name="TextureButton" type="TextureButton" parent="VBoxParent/SettingsCollapsable/SelectModel"]
+[node name="TextureButton" type="TextureButton" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=39810316]
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 texture_normal = ExtResource("4_sh1u6")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="Check icon" type="TextureRect" parent="VBoxParent/SettingsCollapsable/SelectModel"]
+[node name="Check icon" type="TextureRect" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=2099176578]
 visible = false
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
@@ -215,7 +216,7 @@ texture = ExtResource("5_446lv")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Indicator" type="ColorRect" parent="VBoxParent/SettingsCollapsable/SelectModel"]
+[node name="Indicator" type="ColorRect" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=1647077264]
 unique_name_in_owner = true
 visible = false
 material = ExtResource("3_xn70b")
@@ -223,12 +224,12 @@ custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="ShortcutSetting" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable"]
+[node name="ShortcutSetting" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable" unique_id=504305118]
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/ShortcutSetting"]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/ShortcutSetting" unique_id=103079071]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -236,14 +237,14 @@ size_flags_vertical = 1
 text = "Shortcut"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/ShortcutSetting"]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/ShortcutSetting" unique_id=596011379]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable/ShortcutSetting"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable/ShortcutSetting" unique_id=93281333]
 layout_mode = 2
 size_flags_horizontal = 10
 
-[node name="Modifier" type="OptionButton" parent="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer"]
+[node name="Modifier" type="OptionButton" parent="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer" unique_id=91119160]
 layout_mode = 2
 size_flags_horizontal = 10
 selected = 0
@@ -255,7 +256,7 @@ popup/item_1/id = 1
 popup/item_2/text = "Shift"
 popup/item_2/id = 2
 
-[node name="Key" type="OptionButton" parent="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer"]
+[node name="Key" type="OptionButton" parent="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer" unique_id=802753586]
 layout_mode = 2
 size_flags_horizontal = 10
 selected = 2
@@ -325,50 +326,50 @@ popup/item_30/id = 30
 popup/item_31/text = "0"
 popup/item_31/id = 31
 
-[node name="Info box description" type="Label" parent="VBoxParent"]
+[node name="Info box description" type="Label" parent="VBoxParent" unique_id=674128050]
 visible = false
 layout_mode = 2
 text = "Suggested code"
 
-[node name="ChatTitleContainer" type="HBoxContainer" parent="VBoxParent"]
+[node name="ChatTitleContainer" type="HBoxContainer" parent="VBoxParent" unique_id=1488350037]
 layout_mode = 2
 
-[node name="ChatTitle" type="Label" parent="VBoxParent/ChatTitleContainer"]
+[node name="ChatTitle" type="Label" parent="VBoxParent/ChatTitleContainer" unique_id=1512771721]
 layout_mode = 2
 text = "Chat"
 
-[node name="EnableChat" type="CheckButton" parent="VBoxParent/ChatTitleContainer"]
+[node name="EnableChat" type="CheckButton" parent="VBoxParent/ChatTitleContainer" unique_id=1270154702]
 layout_mode = 2
 button_pressed = true
 alignment = 2
 icon_alignment = 2
 
-[node name="Separator3" type="HSeparator" parent="VBoxParent"]
+[node name="Separator3" type="HSeparator" parent="VBoxParent" unique_id=1348479665]
 layout_mode = 2
 
-[node name="ChatSection" type="ScrollContainer" parent="VBoxParent"]
+[node name="ChatSection" type="ScrollContainer" parent="VBoxParent" unique_id=1672989637]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 367)
 layout_mode = 2
 theme = SubResource("Theme_krmud")
 horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxParent/ChatSection"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxParent/ChatSection" unique_id=885985431]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MarginContainer2" type="MarginContainer" parent="VBoxParent/ChatSection/VBoxContainer"]
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxParent/ChatSection/VBoxContainer" unique_id=2093450200]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="ChatContainer" type="VBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer2"]
+[node name="ChatContainer" type="VBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer2" unique_id=428005469]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Label" type="RichTextLabel" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer2/ChatContainer"]
+[node name="Label" type="RichTextLabel" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer2/ChatContainer" unique_id=1623927060]
 visible = false
 layout_mode = 2
 size_flags_vertical = 0
@@ -379,40 +380,40 @@ text = "[b]Sample[/b]"
 fit_content = true
 selection_enabled = true
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxParent/ChatSection/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxParent/ChatSection/VBoxContainer" unique_id=1159302357]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer" unique_id=198022596]
 layout_mode = 2
 
-[node name="ClearChat" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="ClearChat" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer" unique_id=369251974]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 text = "Clear"
 
-[node name="InputChat" type="TextEdit" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="InputChat" type="TextEdit" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer" unique_id=1596844368]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 25)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Ask here something..."
 
-[node name="SendChatMessage" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="SendChatMessage" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer" unique_id=354443457]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 text = "Send"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxParent"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxParent" unique_id=683418194]
 visible = false
 layout_mode = 2
 
-[node name="Info" type="RichTextLabel" parent="VBoxParent/VBoxContainer"]
+[node name="Info" type="RichTextLabel" parent="VBoxParent/VBoxContainer" unique_id=529720075]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 focus_mode = 2
@@ -432,18 +433,18 @@ text = "func load_config():
 	loader_interface.set_api_key(config.get_string(\"api_key"
 selection_enabled = true
 
-[node name="LLMs" type="Node" parent="."]
+[node name="LLMs" type="Node" parent="." unique_id=784985070]
 
-[node name="LmStudioCompletion" type="Node" parent="LLMs"]
+[node name="LmStudioCompletion" type="Node" parent="LLMs" unique_id=347951962]
 script = ExtResource("3_loa2x")
 
-[node name="Gemini" type="Node" parent="LLMs"]
+[node name="Gemini" type="Node" parent="LLMs" unique_id=1466319554]
 script = ExtResource("8_urx8c")
 
-[node name="OllamaCompletion" type="Node" parent="LLMs"]
+[node name="OllamaCompletion" type="Node" parent="LLMs" unique_id=205804666]
 script = ExtResource("7_84eej")
 
-[node name="Version" type="Label" parent="."]
+[node name="Version" type="Label" parent="." unique_id=405938775]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

@@ -20,7 +20,7 @@ extends Control
 
 # Section part
 @onready var settingsSection: Control = $VBoxParent/SettingsCollapsable
-@onready var chatSection: ScrollContainer = get_node("%ChatSection") 
+@onready var chatSection: ScrollContainer = get_node("%ChatSection")
 
 
 #Chat element
@@ -158,13 +158,13 @@ func insert_completion(content: String, pre, post):
 	info.text = content
 	var editor = get_code_editor()
 	var scroll = editor.scroll_vertical
-	
+
 	var caret_text = pre + content
 	var lines_from = pre.split("\n")
 	var lines_to = caret_text.split("\n")
-	
+
 	cur_highlight = [lines_from.size(), lines_to.size()]
-	
+
 	editor.set_text(pre + content + post)
 	editor.set_caret_line(lines_to.size())
 	editor.set_caret_column(lines_to[-1].length())
@@ -343,7 +343,7 @@ func load_config():
 	ollamaCompletions._set_url(urlTextInput.text)
 	geminiCompletions._set_api_key(apiKey)
 	_on_provider_item_selected(providerInput.selected)
-	
+
 
 func apply_by_value(option_button, value):
 	#Select item for option button based on value instead of index
@@ -523,7 +523,7 @@ func _botMessage(text:String ) -> void:
 	hseparator.custom_minimum_size = Vector2(0,35)
 	chatContainer.add_child(hseparator)
 	#Scroll to end
-	await get_tree().process_frame 
+	await get_tree().process_frame
 	chatSection.scroll_vertical = chatSection.get_v_scroll_bar().max_value
 
 
@@ -540,7 +540,7 @@ func _userMessage(text:String ) -> void:
 	hseparator.custom_minimum_size = Vector2(0,35)
 	chatContainer.add_child(hseparator)
 	#Scroll to end
-	await get_tree().process_frame 
+	await get_tree().process_frame
 	chatSection.scroll_vertical = chatSection.get_v_scroll_bar().max_value
 
 func _on_send_chat_message_pressed() -> void:

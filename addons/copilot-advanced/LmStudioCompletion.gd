@@ -2,7 +2,7 @@
 extends "res://addons/copilot-advanced/LLM.gd"
 
 @onready var URL : String  = ""
-const PROMPT_PREFIX = """#This is a GDScript script using Godot 4.x. 
+const PROMPT_PREFIX = """#This is a GDScript script using Godot 4.x.
 #That means the new GDScript 2.0 syntax is used. Here's a couple of important changes that were introduced:
 #- Use @export annotation for exports
 #- Use Node3D instead of Spatial, and position instead of translation
@@ -16,7 +16,7 @@ const PROMPT_PREFIX = """#This is a GDScript script using Godot 4.x.
 #
 #Remember, this is not Python. It's GDScript for use in Godot.
 """
-const CHAT_PREFIX = """#This is a GDScript script using Godot 4.x. 
+const CHAT_PREFIX = """#This is a GDScript script using Godot 4.x.
 #That means the new GDScript 2.0 syntax is used. Here's a couple of important changes that were introduced:
 #- Use @export annotation for exports
 #- Use Node3D instead of Spatial, and position instead of translation
@@ -57,7 +57,7 @@ func get_completion(_prompt, _suffix):
 		"suffix": suffix,
 		"temperature": 0.5,
 		"max_tokens": 500,
-		"stop": "\n\n" if allow_multiline else "\n" 
+		"stop": "\n\n" if allow_multiline else "\n"
 	}
 	var headers = [
 		"Content-Type: application/json"
@@ -89,11 +89,11 @@ func _on_url_text_changed(new_text):
 
 
 func chat_message(newText:String):
-	chat_history.push_front({ "role": "user", "content": newText})	
+	chat_history.push_front({ "role": "user", "content": newText})
 	var body = {
 		"model": model,
-		"messages": chat_history, 
-		"temperature": 0.7, 
+		"messages": chat_history,
+		"temperature": 0.7,
 		"max_tokens": -1,
 		"stream": false
 	  }

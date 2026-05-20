@@ -161,7 +161,7 @@ func get_completion(_prompt, _suffix):
 		}
 	  ]
 	},
-	"generation_config": { 
+	"generation_config": {
 		"max_output_tokens": 1000,
 		"temperature": 1
 	}
@@ -225,7 +225,7 @@ func chat_message(newText:String):
 					"text": newText
 				}
 			]
-		})	
+		})
 	var body = {
 		"contents": chat_history,
 		"system_instruction": {
@@ -235,7 +235,7 @@ func chat_message(newText:String):
 			}
 		  ]
 		},
-		"generation_config": { 
+		"generation_config": {
 			"max_output_tokens": 1000,
 			"temperature": 1
 		}
