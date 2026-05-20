@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Godot Copilot Selfhost is a Godot 4.x editor addon that provides AI-assisted code completions and chat directly within the Godot editor. It supports multiple LLM providers: Ollama (local), LM Studio (local), Google Gemini (cloud), and OpenAI-compatible APIs.
+Godot Copilot Selfhost is a Godot 4.x editor addon that provides AI-assisted code completions and chat directly within the Godot editor. It uses LM Studio (or any OpenAI-compatible local server) as its backend.
 
 To develop: open the project in Godot 4.6+, then enable the addon in **Project Settings > Plugins > "Copilot selfhost"**. No build step is needed for GDScript changes. Restart the editor after modifying [Plugin.gd](addons/copilot-advanced/Plugin.gd) or [CopilotUI.tscn](addons/copilot-advanced/CopilotUI.tscn).
 
@@ -50,9 +50,7 @@ The addon lives entirely in [addons/copilot-advanced/](addons/copilot-advanced/)
 
 | File | Provider | Endpoints |
 |------|----------|-----------|
-| [OllamaCompletion.gd](addons/copilot-advanced/OllamaCompletion.gd) | Ollama | `/api/generate`, `/api/chat` |
-| [LmStudioCompletion.gd](addons/copilot-advanced/LmStudioCompletion.gd) | LM Studio (OpenAI-compatible) | `/v1/completions`, `/v1/chat/completions` |
-| [GeminiCompletion.gd](addons/copilot-advanced/GeminiCompletion.gd) | Google Gemini | `generativelanguage.googleapis.com/v1beta` |
+| [LmStudioCompletion.gd](addons/copilot-advanced/LmStudioCompletion.gd) | LM Studio / OpenAI-compatible | `/v1/models`, `/v1/chat/completions` |
 
 ### Signal Connections
 
@@ -64,7 +62,7 @@ Provider signals (`completion_received`, `chat_received`, `completion_error`) ar
 User presses shortcut (default Alt+C / Cmd+C)
   → Copilot.gd::request_completion()
   → get_pre_post() splits code at caret → [pre, post]
-  → get_llm() selects active provider (0=Ollama, 1=LmStudio, 2=Gemini)
+  → get_llm() returns lmStudioCompletions
   → provider._send_user_prompt(pre, post)
   → HTTP response → completion_received signal
   → Copilot._on_code_completion_received()
@@ -83,24 +81,18 @@ User types message and clicks Send
   → _botMessage() appends RichTextLabel to chat container
 ```
 
-Switching providers calls `_clean_chat()` on the previously active provider, which resets `chat_history` and re-injects the system prompt.
+The Clear button calls `_clean_chat()`, which resets `chat_history` and re-injects the system prompt.
 
-### Fill-in-the-Middle Strategies
+### Fill-in-the-Middle Strategy
 
-Each provider uses a different approach to indicate the insertion point:
-
-| Provider | Strategy |
-|----------|----------|
-| Ollama | `##<GEMINI_COMPLETE_HERE>##` marker concatenated between prefix and suffix |
-| LM Studio | `PROMPT_PREFIX` prepended; native FIM via `prompt`+`suffix` fields |
-| Gemini | `##<GEMINI_COMPLETE_HERE>##` marker in `contents`, system prompt via `system_instruction` |
+LM Studio uses a system prompt (`COMPLETION_SYSTEM`) plus a user message with an `!INSERT_CODE_HERE!` marker between prefix and suffix, sent to `/v1/chat/completions`.
 
 ### Key Behaviors
 
 - **Code trimming**: Prompts are capped at `MAX_LENGTH` (~15000 chars); suffix is trimmed first.
 - **`@tool` annotation**: All scripts run inside the editor, not at game runtime.
 - **Encrypted config**: Settings (including API keys) are stored via `ConfigFile.save_encrypted_pass()` at `user://copilot-advanced.cfg`. The passphrase is hardcoded in `Copilot.gd::PREFERENCES_PASS`.
-- **URL not persisted**: The provider base URL is **not** saved to config. It resets to the default (`localhost:11434` for Ollama, `127.0.0.1:1234` for LM Studio) whenever the provider dropdown changes.
+- **URL not persisted**: The server URL is **not** saved to config. It defaults to `http://127.0.0.1:1234` on each load.
 - **Platform shortcuts**: Modifier keys differ on macOS (Cmd/Option) vs Windows/Linux (Ctrl/Alt). `is_mac()` checks `OS.get_name() == "macOS"`.
 
 ### Adding a New Provider
@@ -109,11 +101,11 @@ Each provider uses a different approach to indicate the insertion point:
 2. Implement `_send_user_prompt(pre, post)`, `_set_model(model_name)`, and optionally `_get_models()` and `chat_message(text)`.
 3. Emit `completion_received(text, pre, post)` on success; emit `completion_error(error)` on failure.
 4. Add the node to `CopilotUI.tscn` under the `LLMs` node and connect its signals to `Copilot.gd` handlers there.
-5. Register it in `Copilot.gd::get_llm()` with the next dropdown index and add it to the provider `OptionButton` in `CopilotUI.tscn`.
+5. Update `Copilot.gd::get_llm()` to return the new provider.
 
 ### System Prompts
 
-Each provider file contains its own system prompt constants (`PROMPT_PREFIX`, `FILL_IN_THE_MIDDLE`, `SYSTEM_TEMPLATE`). All prompts instruct the model to:
+[LmStudioCompletion.gd](addons/copilot-advanced/LmStudioCompletion.gd) contains system prompt constants (`COMPLETION_SYSTEM` for completions, `CHAT_PREFIX` for chat). All prompts instruct the model to:
 - Output only code (no explanations in completion mode)
 - Use GDScript 2.0 typed syntax targeting Godot 4.x APIs (`Node3D`, `instantiate()`, `@export`, `@onready`)
 

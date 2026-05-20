@@ -13,6 +13,7 @@ llms
 Ollama
 onready
 pastable
+Qwen
 randf
 Selfhost
 subdirs
