@@ -466,7 +466,6 @@ vertical_alignment = 2
 [connection signal="toggled" from="VBoxParent/ChatTitleContainer/EnableChat" to="." method="_on_enable_chat_toggled"]
 [connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/ClearChat" to="." method="_on_send_chat_message_2_pressed"]
 [connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/SendChatMessage" to="." method="_on_send_chat_message_pressed"]
-[connection signal="meta_clicked" from="VBoxParent/VBoxContainer/Info" to="." method="on_info_meta_clicked"]
 [connection signal="chat_received" from="LLMs/LmStudioCompletion" to="." method="_on_lm_studio_completion_chat_received"]
 [connection signal="completion_error" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_error"]
 [connection signal="completion_received" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_received"]

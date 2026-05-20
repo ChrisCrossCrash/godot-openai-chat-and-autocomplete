@@ -38,8 +38,6 @@ var request_code_state = null
 var cur_highlight = null
 var indicator = null
 
-var models = {}
-var openai_api_key
 var cur_model
 var apiKey
 var provider
@@ -53,22 +51,8 @@ const PREFERENCES_STORAGE_NAME = "user://copilot-advanced.cfg"
 const PREFERENCES_PASS = "F4fv2Jxpasp20VS5VSp2Yp2v9aNVJ21aRK"
 
 func _ready():
-	#populate_models()
 	populate_modifiers()
 	load_config()
-	pass
-	#Initialize dock, load settings
-
-func populate_models():
-	#Add all found models to settings
-	model_select.clear()
-	for llm in llms.get_children():
-		var new_models = llm._get_models()
-		for model in new_models:
-			model_select.add_item(model)
-			models[model] = get_path_to(llm)
-	model_select.select(0)
-	set_model(model_select.get_item_text(0))
 
 func populate_modifiers():
 	#Add available shortcut modifiers based on platform
@@ -200,10 +184,8 @@ func revert_change():
 	clear_highlights()
 
 func _process(delta):
-	#Update visuals and context label
 	update_highlights()
 	update_loading_indicator()
-	update_context()
 
 func update_highlights():
 	#Make sure highlighted lines persist until explicitely removed
@@ -212,10 +194,6 @@ func update_highlights():
 		var editor = get_code_editor()
 		for line in range(cur_highlight[0]-1, cur_highlight[1]):
 			editor.set_line_background_color(line, highlight_color)
-
-func update_context():
-	#Show currently edited file in dock
-	var script = get_current_script()
 
 func on_main_screen_changed(_screen):
 	#Track current editor screen (2D, 3D, Script)
