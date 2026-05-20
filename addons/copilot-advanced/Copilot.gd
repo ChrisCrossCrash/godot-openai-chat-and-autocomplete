@@ -39,7 +39,7 @@ var cur_highlight = null
 var indicator = null
 
 var cur_model
-var apiKey
+var apiKey = ""
 var provider
 var cur_shortcut_modifier = "Control" if is_mac() else "Alt"
 var cur_shortcut_key = "C"
