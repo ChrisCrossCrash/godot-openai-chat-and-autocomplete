@@ -21,7 +21,7 @@ config/icon="res://icon.png"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/copilot-advanced/plugin.cfg")
+enabled=PackedStringArray("res://addons/copilot-advanced/plugin.cfg", "res://addons/gut/plugin.cfg")
 
 [gui]
 
