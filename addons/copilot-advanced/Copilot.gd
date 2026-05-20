@@ -3,19 +3,13 @@ extends Control
 
 @onready var llms = $LLMs
 @onready var lmStudioCompletions = $LLMs/LmStudioCompletion
-@onready var geminiCompletions = $LLMs/Gemini
-@onready var ollamaCompletions = $LLMs/OllamaCompletion
 @onready var model_select = $VBoxParent/SettingsCollapsable/SelectModel/Model
 @onready var shortcut_modifier_select = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Modifier
 @onready var shortcut_key_select = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Key
 @onready var info: RichTextLabel = $VBoxParent/VBoxContainer/Info
 @onready var urlTextInput: LineEdit = get_node("%URL")
-@onready var providerInput: OptionButton = get_node("%provider")
 @onready var reloadButton: TextureButton = $VBoxParent/SettingsCollapsable/SelectModel/TextureButton
 @onready var loadingIndicator: ColorRect = get_node("%Indicator")
-@onready var urlContainer: HBoxContainer = get_node("%UrlContainer")
-@onready var apiKeyContainer: HBoxContainer = get_node("%ApiKeyContainer")
-@onready var apiKeyInput: LineEdit = get_node("%API_KEY")
 
 
 # Section part
@@ -39,8 +33,6 @@ var cur_highlight = null
 var indicator = null
 
 var cur_model
-var apiKey = ""
-var provider
 var cur_shortcut_modifier = "Control" if is_mac() else "Alt"
 var cur_shortcut_key = "C"
 var allow_multiline = true
@@ -249,16 +241,7 @@ func get_pre_post():
 #Wrinte ad add function
 
 func get_llm():
-	#Get currently active llm and set active model
-	var llm = lmStudioCompletions
-	match providerInput.selected:
-		0:
-			llm = ollamaCompletions
-		1:
-			llm = lmStudioCompletions
-		2:
-			llm = geminiCompletions
-	return llm
+	return lmStudioCompletions
 
 func matches_request_state(pre, post):
 	#Check if code passed for completion request matches current code
@@ -317,32 +300,24 @@ func store_config():
 	#Store current setting in config file
 	var config = ConfigFile.new()
 	config.set_value("preferences", "model", cur_model)
-	config.set_value("preferences", "provider", provider)
 	config.set_value("preferences", "shortcut_modifier", cur_shortcut_modifier)
 	config.set_value("preferences", "shortcut_key", cur_shortcut_key)
-	config.set_value("preferences", "apiKey", apiKey)
 	config.save_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
 
 func load_config():
 	#Retrieve current settings from config file
 	var config = ConfigFile.new()
 	var err = config.load_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
+	lmStudioCompletions._set_url(urlTextInput.text)
+	updateLmStudioModel()
 	if err != OK: return
 	cur_model = config.get_value("preferences", "model", cur_model)
-	provider = config.get_value("preferences", "provider", provider)
-	apiKey = config.get_value("preferences", "apiKey", apiKey)
-	apiKeyInput.text = apiKey
-	providerInput.selected = provider
 	apply_by_value(model_select, cur_model)
 	set_model(model_select.get_item_text(model_select.selected))
 	cur_shortcut_modifier = config.get_value("preferences", "shortcut_modifier", cur_shortcut_modifier)
 	apply_by_value(shortcut_modifier_select, cur_shortcut_modifier)
 	cur_shortcut_key = config.get_value("preferences", "shortcut_key", cur_shortcut_key)
 	apply_by_value(shortcut_key_select, cur_shortcut_key)
-	lmStudioCompletions._set_url(urlTextInput.text)
-	ollamaCompletions._set_url(urlTextInput.text)
-	geminiCompletions._set_api_key(apiKey)
-	_on_provider_item_selected(providerInput.selected)
 
 
 func apply_by_value(option_button, value):
@@ -350,57 +325,6 @@ func apply_by_value(option_button, value):
 	for i in option_button.item_count:
 		if option_button.get_item_text(i) == value:
 			option_button.select(i)
-
-func _on_provider_item_selected(index: int) -> void:
-	provider = index
-	_on_send_chat_message_2_pressed()
-	match index:
-		0:
-			urlContainer.visible = true
-			apiKeyContainer.visible = false
-			urlTextInput.text = "http://localhost:11434"
-			self.updateOllamaModel()
-		1:
-			urlContainer.visible = true
-			apiKeyContainer.visible = false
-			urlTextInput.text = "http://127.0.0.1:1234"
-			self.updateLmStudioModel()
-		2:
-			urlContainer.visible = false
-			apiKeyContainer.visible = true
-			self.updateGeminiModel()
-	lmStudioCompletions._set_url(urlTextInput.text)
-	ollamaCompletions._set_url(urlTextInput.text)
-	store_config()
-
-
-func updateOllamaModel():
-	reloadButton.visible = false
-	loadingIndicator.visible = true
-	var http_request = HTTPRequest.new()
-	add_child(http_request)
-	http_request.connect("request_completed",self._ollamaModelLoaded)
-	var error = http_request.request(urlTextInput.text+"/api/tags")
-	if error != OK:
-		reloadButton.visible = true
-		loadingIndicator.visible = false
-		pass
-		# handle the error
-
-func _ollamaModelLoaded(result, response_code, headers, body):
-	reloadButton.visible = true
-	loadingIndicator.visible = false
-	if result != HTTPRequest.RESULT_SUCCESS:
-		print("Error on ollama model request")
-	var test_json_conv = JSON.new()
-	test_json_conv.parse(body.get_string_from_utf8())
-	var json = test_json_conv.get_data()
-	model_select.clear()
-	for model in json.models:
-		model_select.add_item(model.model)
-	model_select.select(0)
-	lmStudioCompletions._set_model(json.models[0].model)
-
 
 func updateLmStudioModel():
 	reloadButton.visible = false
@@ -429,65 +353,12 @@ func _lmStudioModelLoaded(result, response_code, headers, body):
 	model_select.select(0)
 	lmStudioCompletions._set_model(json.data[0].id)
 
-func updateGeminiModel():
-	reloadButton.visible = false
-	loadingIndicator.visible = true
-	var http_request = HTTPRequest.new()
-	add_child(http_request)
-	http_request.connect("request_completed",self._geminiModelLoaded)
-	var error = http_request.request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=50&pageToken=&key="+apiKey)
-	if error != OK:
-		reloadButton.visible = true
-		loadingIndicator.visible = false
-		pass
-		# handle the error
-
-
-func _geminiModelLoaded(result, response_code, headers, body):
-	reloadButton.visible = true
-	loadingIndicator.visible = false
-	if result != HTTPRequest.RESULT_SUCCESS:
-		print("Error on gemini model request")
-	var test_json_conv = JSON.new()
-	test_json_conv.parse(body.get_string_from_utf8())
-	var json = test_json_conv.get_data()
-	model_select.clear()
-	var i: int = 0
-	var selectedModel: int = 0
-	for model in json.models:
-		i = i+1
-		model_select.add_item(model.name)
-		if model.name == "models/gemini-2.0-flash":
-			selectedModel = i-1;
-			geminiCompletions._set_model(model.name)
-	model_select.select(selectedModel)
-
 func _on_texture_button_button_down() -> void:
-	#Refresh model based on provider
-	print_rich("[b]_on_texture_button_button_down[/b] - Loading new model for provider: ",providerInput.selected)
-	match providerInput.selected:
-		0:
-			self.updateOllamaModel()
-		1:
-			self.updateLmStudioModel()
-		2:
-			self.updateGeminiModel()
-	pass # Replace with function body.
+	self.updateLmStudioModel()
 
 
 func _on_url_text_changed(new_text: String) -> void:
-	print_rich("[b]_on_url_text_changed[/b] - Changing text: ",new_text," for provider: ",providerInput.selected)
-	match providerInput.selected:
-		0:
-			ollamaCompletions._set_url(new_text)
-			pass
-		1:
-			lmStudioCompletions._set_url(new_text)
-			pass
-		2:
-			apiKey = new_text
-			geminiCompletions._set_api_key(new_text)
-			pass
+	lmStudioCompletions._set_url(new_text)
 	store_config()
 
 
