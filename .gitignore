@@ -1,3 +1,6 @@
+# Godot editor settings
+.godot/
+
 # Rider
 .idea/
 
