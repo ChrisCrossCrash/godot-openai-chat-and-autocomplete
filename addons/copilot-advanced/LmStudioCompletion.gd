@@ -92,8 +92,12 @@ func _on_url_text_changed(new_text):
 	URL = new_text
 
 
+func _append_to_history(message: Dictionary) -> void:
+	chat_history.push_back(message)
+
+
 func chat_message(newText:String):
-	chat_history.push_front({ "role": "user", "content": newText})
+	_append_to_history({ "role": "user", "content": newText})
 	var body = {
 		"model": model,
 		"messages": chat_history,
@@ -123,7 +127,7 @@ func on_chat_complete(result, response_code, headers, body):
 		emit_signal("completion_error", response)
 		return
 	var completion = response.choices[0].message
-	chat_history.push_front(completion)
+	_append_to_history(completion)
 	emit_signal("chat_received", completion.content)
 
 
