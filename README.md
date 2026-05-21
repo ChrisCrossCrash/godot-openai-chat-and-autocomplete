@@ -1,8 +1,11 @@
-# Godot Copilot Selfhost (Based on https://github.com/minosvasilias/godot-copilot)
+# Godot OpenAI Chat and Autocomplete
 
 AI-assisted development for the Godot engine.
 
-Compatible with `4.x`.
+This project is a fork of [Godot Copilot Selfhost](https://github.com/drakonkat/godot-copilot-selfhost), which is a fork of [Godot Copilot](https://github.com/minosvasilias/godot-copilot).
+
+
+Tested on Godot 4.6.
 
 ### What does this do?
 

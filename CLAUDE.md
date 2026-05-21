@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Godot Copilot Selfhost is a Godot 4.x editor addon that provides AI-assisted code completions and chat directly within the Godot editor. It uses LM Studio (or any OpenAI-compatible local server) as its backend.
+Godot OpenAI Chat and Autocomplete is a Godot 4.x editor addon that provides AI-assisted code completions and chat directly within the Godot editor. It uses LM Studio (or any OpenAI-compatible local server) as its backend.
 
 To develop: open the project in Godot 4.6+, then enable the addon in **Project Settings > Plugins > "Godot OpenAI Chat and Autocomplete"**. No build step is needed for GDScript changes. Restart the editor after modifying [plugin.gd](addons/godot-openai/plugin.gd) or [ai_panel.tscn](addons/godot-openai/ai_panel.tscn).
 
