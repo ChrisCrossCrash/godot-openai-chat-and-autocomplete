@@ -290,8 +290,8 @@ layout_mode = 2
 
 [node name="ChatSection" type="ScrollContainer" parent="VBoxParent" unique_id=1672989637]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 367)
 layout_mode = 2
+size_flags_vertical = 3
 theme = SubResource("Theme_krmud")
 horizontal_scroll_mode = 0
 
@@ -337,8 +337,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
-wrap_mode = 1
 placeholder_text = "Ask something here..."
+wrap_mode = 1
 
 [node name="ChatButtonRow" type="HBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer" unique_id=300100003]
 layout_mode = 2
