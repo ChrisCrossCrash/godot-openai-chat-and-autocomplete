@@ -50,6 +50,7 @@ var _indicator: ColorRect
 func _ready() -> void:
 	_populate_modifiers()
 	_load_config()
+	_input_chat.gui_input.connect(_on_input_chat_gui_input)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -131,17 +132,38 @@ func _on_enable_chat_toggled(toggled_on: bool) -> void:
 
 
 func _on_send_chat_message_pressed() -> void:
-	print_rich("[b]_on_send_chat_message_pressed[/b] - Sending message")
-	var text := _input_chat.text
-	_user_message(text)
-	_input_chat.text = ""
-	_get_llm().chat_message(text)
+	_submit_chat()
+
+
+func _on_input_chat_gui_input(event: InputEvent) -> void:
+	if not event is InputEventKey:
+		return
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.keycode not in [KEY_ENTER, KEY_KP_ENTER]:
+		return
+	accept_event()
+
+	# Shift+Enter inserts a newline.
+	if key_event.shift_pressed:
+		_input_chat.insert_text_at_caret("\n")
+	
+	# Enter alone submits the message.
+	else:
+		_submit_chat()
 
 
 func _on_send_chat_message_2_pressed() -> void:
 	_get_llm()._clean_chat()
 	for c in _chat_container.get_children():
 		c.queue_free()
+
+
+func _submit_chat() -> void:
+	print_rich("[b]_on_send_chat_message_pressed[/b] - Sending message")
+	var text := _input_chat.text
+	_user_message(text)
+	_input_chat.text = ""
+	_get_llm().chat_message(text)
 
 
 func _on_chat_received(text: String) -> void:
