@@ -5,8 +5,9 @@ extends Control
 
 const PREFERENCES_STORAGE_NAME: String = "user://godot-openai.cfg"
 const PREFERENCES_PASS: String = "F4fv2Jxpasp20VS5VSp2Yp2v9aNVJ21aRK"
-const BOT_THEME_PATH: String = "res://addons/godot-openai/asset/BotTheme.tres"
-const USER_THEME_PATH: String = "res://addons/godot-openai/asset/UserTheme.tres"
+const _CHAT_BUBBLE_SCENE: PackedScene = preload("res://addons/godot-openai/chat_bubble.tscn")
+const _BOT_THEME: Theme = preload("res://addons/godot-openai/asset/BotTheme.tres")
+const _USER_THEME: Theme = preload("res://addons/godot-openai/asset/UserTheme.tres")
 
 ## Shader applied to the loading indicator overlay drawn at the caret.
 @export var icon_shader: ShaderMaterial
@@ -418,20 +419,21 @@ func _fetch_models() -> void:
 
 
 func _bot_message(text: String) -> void:
-	await _add_chat_bubble(text, BOT_THEME_PATH, true)
+	await _add_chat_bubble(text, _BOT_THEME, true, false)
 
 
 func _user_message(text: String) -> void:
-	await _add_chat_bubble(text, USER_THEME_PATH, false)
+	await _add_chat_bubble(text, _USER_THEME, false, true)
 
 
-func _add_chat_bubble(text: String, theme_path: String, selectable: bool) -> void:
-	var label := RichTextLabel.new()
-	label.theme = ResourceLoader.load(theme_path)
-	label.text = text
-	label.bbcode_enabled = true
-	label.fit_content = true
-	label.selection_enabled = selectable
-	_chat_container.add_child(label)
+func _add_chat_bubble(
+	text: String,
+	theme: Theme,
+	selectable: bool,
+	align_right: bool
+) -> void:
+	var bubble: HBoxContainer = _CHAT_BUBBLE_SCENE.instantiate()
+	bubble.setup(text, theme, selectable, align_right)
+	_chat_container.add_child(bubble)
 	await get_tree().process_frame
 	_chat_section.scroll_vertical = _chat_section.get_v_scroll_bar().max_value
