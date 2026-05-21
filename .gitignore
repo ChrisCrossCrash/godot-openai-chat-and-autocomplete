@@ -1,3 +1,6 @@
+# macOS
+.DS_Store
+
 # Godot editor settings
 .godot/
 
