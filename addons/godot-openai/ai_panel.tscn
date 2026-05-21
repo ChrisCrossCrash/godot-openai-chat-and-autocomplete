@@ -328,23 +328,32 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer" unique_id=198022596]
+[node name="ChatInputContainer" type="VBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer" unique_id=198022596]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="InputChat" type="TextEdit" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer" unique_id=1596844368]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+wrap_mode = 1
+placeholder_text = "Ask something here..."
+
+[node name="ChatButtonRow" type="HBoxContainer" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer" unique_id=300100003]
 layout_mode = 2
 
-[node name="ClearChat" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer" unique_id=369251974]
+[node name="ClearChat" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer/ChatButtonRow" unique_id=369251974]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 text = "Clear"
 
-[node name="InputChat" type="TextEdit" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer" unique_id=1596844368]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 25)
+[node name="ButtonSpacer" type="Control" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer/ChatButtonRow" unique_id=300100004]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Ask here something..."
 
-[node name="SendChatMessage" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer" unique_id=354443457]
+[node name="SendChatMessage" type="Button" parent="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer/ChatButtonRow" unique_id=354443457]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
@@ -396,8 +405,8 @@ vertical_alignment = 2
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Modifier" to="." method="_on_shortcut_modifier_selected"]
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Key" to="." method="_on_shortcut_key_selected"]
 [connection signal="toggled" from="VBoxParent/ChatTitleContainer/EnableChat" to="." method="_on_enable_chat_toggled"]
-[connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/ClearChat" to="." method="_on_send_chat_message_2_pressed"]
-[connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/SendChatMessage" to="." method="_on_send_chat_message_pressed"]
+[connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer/ChatButtonRow/ClearChat" to="." method="_on_send_chat_message_2_pressed"]
+[connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer/ChatButtonRow/SendChatMessage" to="." method="_on_send_chat_message_pressed"]
 [connection signal="chat_received" from="OpenAIClient" to="." method="_on_chat_received"]
 [connection signal="completion_error" from="OpenAIClient" to="." method="_on_code_completion_error"]
 [connection signal="completion_received" from="OpenAIClient" to="." method="_on_code_completion_received"]
