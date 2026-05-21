@@ -94,16 +94,16 @@ icon_alignment = 2
 [node name="Separator2" type="HSeparator" parent="VBoxParent" unique_id=1323247447]
 layout_mode = 2
 
-[node name="SettingsCollapsable" type="VBoxContainer" parent="VBoxParent" unique_id=1387880075]
+[node name="SettingsCollapsible" type="VBoxContainer" parent="VBoxParent" unique_id=1387880075]
 layout_mode = 2
 
-[node name="UrlContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable" unique_id=435141524]
+[node name="UrlContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsible" unique_id=435141524]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/UrlContainer" unique_id=2124791486]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsible/UrlContainer" unique_id=2124791486]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -111,22 +111,22 @@ size_flags_vertical = 1
 text = "Server URL"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/UrlContainer" unique_id=916690413]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsible/UrlContainer" unique_id=916690413]
 layout_mode = 2
 
-[node name="URL" type="LineEdit" parent="VBoxParent/SettingsCollapsable/UrlContainer" unique_id=2005378182]
+[node name="URL" type="LineEdit" parent="VBoxParent/SettingsCollapsible/UrlContainer" unique_id=2005378182]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 size_flags_horizontal = 10
 text = "http://127.0.0.1:1234"
 
-[node name="SelectModel" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable" unique_id=1495536839]
+[node name="SelectModel" type="HBoxContainer" parent="VBoxParent/SettingsCollapsible" unique_id=1495536839]
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=1827510546]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=1827510546]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -134,22 +134,22 @@ size_flags_vertical = 1
 text = "Model"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=428845826]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=428845826]
 layout_mode = 2
 
-[node name="Model" type="OptionButton" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=833070162]
+[node name="Model" type="OptionButton" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=833070162]
 layout_mode = 2
 size_flags_horizontal = 10
 fit_to_longest_item = false
 
-[node name="TextureButton" type="TextureButton" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=39810316]
+[node name="TextureButton" type="TextureButton" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=39810316]
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 texture_normal = ExtResource("4_sh1u6")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="Check icon" type="TextureRect" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=2099176578]
+[node name="Check icon" type="TextureRect" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=2099176578]
 visible = false
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
@@ -157,7 +157,7 @@ texture = ExtResource("5_446lv")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Indicator" type="ColorRect" parent="VBoxParent/SettingsCollapsable/SelectModel" unique_id=1647077264]
+[node name="Indicator" type="ColorRect" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=1647077264]
 unique_name_in_owner = true
 visible = false
 material = ExtResource("3_xn70b")
@@ -165,12 +165,12 @@ custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="ShortcutSetting" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable" unique_id=504305118]
+[node name="ShortcutSetting" type="HBoxContainer" parent="VBoxParent/SettingsCollapsible" unique_id=504305118]
 custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsable/ShortcutSetting" unique_id=103079071]
+[node name="Label" type="Label" parent="VBoxParent/SettingsCollapsible/ShortcutSetting" unique_id=103079071]
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -178,14 +178,14 @@ size_flags_vertical = 1
 text = "Shortcut"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsable/ShortcutSetting" unique_id=596011379]
+[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsible/ShortcutSetting" unique_id=596011379]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsable/ShortcutSetting" unique_id=93281333]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsible/ShortcutSetting" unique_id=93281333]
 layout_mode = 2
 size_flags_horizontal = 10
 
-[node name="Modifier" type="OptionButton" parent="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer" unique_id=91119160]
+[node name="Modifier" type="OptionButton" parent="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer" unique_id=91119160]
 layout_mode = 2
 size_flags_horizontal = 10
 selected = 0
@@ -197,7 +197,7 @@ popup/item_1/id = 1
 popup/item_2/text = "Shift"
 popup/item_2/id = 2
 
-[node name="Key" type="OptionButton" parent="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer" unique_id=802753586]
+[node name="Key" type="OptionButton" parent="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer" unique_id=802753586]
 layout_mode = 2
 size_flags_horizontal = 10
 selected = 2
@@ -390,11 +390,11 @@ horizontal_alignment = 2
 vertical_alignment = 2
 
 [connection signal="toggled" from="VBoxParent/HBoxContainer/CheckButton" to="." method="_on_check_button_toggled"]
-[connection signal="text_changed" from="VBoxParent/SettingsCollapsable/UrlContainer/URL" to="." method="_on_url_text_changed"]
-[connection signal="item_selected" from="VBoxParent/SettingsCollapsable/SelectModel/Model" to="." method="_on_model_selected"]
-[connection signal="button_down" from="VBoxParent/SettingsCollapsable/SelectModel/TextureButton" to="." method="_on_texture_button_button_down"]
-[connection signal="item_selected" from="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Modifier" to="." method="_on_shortcut_modifier_selected"]
-[connection signal="item_selected" from="VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Key" to="." method="_on_shortcut_key_selected"]
+[connection signal="text_changed" from="VBoxParent/SettingsCollapsible/UrlContainer/URL" to="." method="_on_url_text_changed"]
+[connection signal="item_selected" from="VBoxParent/SettingsCollapsible/SelectModel/Model" to="." method="_on_model_selected"]
+[connection signal="button_down" from="VBoxParent/SettingsCollapsible/SelectModel/TextureButton" to="." method="_on_texture_button_button_down"]
+[connection signal="item_selected" from="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Modifier" to="." method="_on_shortcut_modifier_selected"]
+[connection signal="item_selected" from="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Key" to="." method="_on_shortcut_key_selected"]
 [connection signal="toggled" from="VBoxParent/ChatTitleContainer/EnableChat" to="." method="_on_enable_chat_toggled"]
 [connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/ClearChat" to="." method="_on_send_chat_message_2_pressed"]
 [connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/SendChatMessage" to="." method="_on_send_chat_message_pressed"]

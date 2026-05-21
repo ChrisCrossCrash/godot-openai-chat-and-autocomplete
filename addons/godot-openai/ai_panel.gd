@@ -34,14 +34,14 @@ var _cur_shortcut_key: String = "C"
 var _indicator: ColorRect
 
 @onready var _openai_client: Node = $OpenAIClient
-@onready var _model_select: OptionButton = $VBoxParent/SettingsCollapsable/SelectModel/Model
-@onready var _shortcut_modifier_select: OptionButton = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Modifier
-@onready var _shortcut_key_select: OptionButton = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Key
+@onready var _model_select: OptionButton = $VBoxParent/SettingsCollapsible/SelectModel/Model
+@onready var _shortcut_modifier_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Modifier
+@onready var _shortcut_key_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Key
 @onready var _info: RichTextLabel = $VBoxParent/VBoxContainer/Info
 @onready var _url_text_input: LineEdit = get_node("%URL")
-@onready var _reload_button: TextureButton = $VBoxParent/SettingsCollapsable/SelectModel/TextureButton
+@onready var _reload_button: TextureButton = $VBoxParent/SettingsCollapsible/SelectModel/TextureButton
 @onready var _loading_indicator: ColorRect = get_node("%Indicator")
-@onready var _settings_section: Control = $VBoxParent/SettingsCollapsable
+@onready var _settings_section: Control = $VBoxParent/SettingsCollapsible
 @onready var _chat_section: ScrollContainer = get_node("%ChatSection")
 @onready var _input_chat: TextEdit = get_node("%InputChat")
 @onready var _chat_container: VBoxContainer = get_node("%ChatContainer")
