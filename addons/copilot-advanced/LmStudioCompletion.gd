@@ -1,5 +1,14 @@
 @tool
-extends "res://addons/copilot-advanced/LLM.gd"
+extends Node
+
+var model
+var api_key = ""
+var allow_multiline
+var chat_history: Array = []
+
+signal completion_received(completion, pre, post)
+signal chat_received(text)
+signal completion_error(error)
 
 @onready var URL : String  = ""
 const INSERT_TAG = "!INSERT_CODE_HERE!"
@@ -34,6 +43,17 @@ const CHAT_PREFIX = """#This is a GDScript script using Godot 4.x.
 # You are an internal plugin named Jared, and help people to understand the code
 """
 const MAX_LENGTH = 15000
+
+func _get_models():
+	return []
+
+func _set_model(model_name):
+	print_rich("[b]_set_model[/b] - Set model: ", model_name)
+	model = model_name
+
+func _set_api_key(key):
+	print_rich("[b]_set_api_key[/b] - Set apiKey: ", key)
+	api_key = key
 
 func _set_url(url):
 	URL = url
