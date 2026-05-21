@@ -433,8 +433,5 @@ func _add_chat_bubble(text: String, theme_path: String, selectable: bool) -> voi
 	label.fit_content = true
 	label.selection_enabled = selectable
 	_chat_container.add_child(label)
-	var separator := HSeparator.new()
-	separator.custom_minimum_size = Vector2(0, 35)
-	_chat_container.add_child(separator)
 	await get_tree().process_frame
 	_chat_section.scroll_vertical = _chat_section.get_v_scroll_bar().max_value
