@@ -2,7 +2,7 @@
 extends Node
 
 var model
-var api_key = "AIzaSyArTBrAO7x8GGlhhHr9w_9VvdDdgEo78b4"
+var api_key = ""
 var allow_multiline
 var chat_history: Array = [
 ]
