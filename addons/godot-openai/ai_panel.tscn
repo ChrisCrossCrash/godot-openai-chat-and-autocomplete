@@ -111,9 +111,6 @@ size_flags_vertical = 1
 text = "Server URL"
 vertical_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsible/UrlContainer" unique_id=916690413]
-layout_mode = 2
-
 [node name="URL" type="LineEdit" parent="VBoxParent/SettingsCollapsible/UrlContainer" unique_id=2005378182]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(190, 0)
@@ -133,9 +130,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Model"
 vertical_alignment = 1
-
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=428845826]
-layout_mode = 2
 
 [node name="Model" type="OptionButton" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=833070162]
 layout_mode = 2
@@ -177,9 +171,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Shortcut"
 vertical_alignment = 1
-
-[node name="VSeparator" type="VSeparator" parent="VBoxParent/SettingsCollapsible/ShortcutSetting" unique_id=596011379]
-layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent/SettingsCollapsible/ShortcutSetting" unique_id=93281333]
 layout_mode = 2
