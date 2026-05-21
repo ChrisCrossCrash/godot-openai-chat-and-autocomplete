@@ -13,7 +13,7 @@ func setup(
 	label.text = text
 	label.selection_enabled = selectable
 	if align_right:
-		spacer.size_flags_stretch_ratio = 0.3
-		label.size_flags_stretch_ratio = 0.7
+		spacer.size_flags_horizontal = SIZE_SHRINK_BEGIN
+		spacer.custom_minimum_size = Vector2(32, 0)
 	else:
 		spacer.visible = false
