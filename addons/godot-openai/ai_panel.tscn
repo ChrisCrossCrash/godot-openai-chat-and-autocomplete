@@ -136,9 +136,10 @@ layout_mode = 2
 size_flags_horizontal = 10
 fit_to_longest_item = false
 
-[node name="TextureButton" type="TextureButton" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=39810316]
+[node name="ReloadModelsButton" type="TextureButton" parent="VBoxParent/SettingsCollapsible/SelectModel" unique_id=39810316]
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
+tooltip_text = "Reload models from server"
 texture_normal = ExtResource("4_sh1u6")
 ignore_texture_size = true
 stretch_mode = 5
@@ -392,7 +393,7 @@ vertical_alignment = 2
 [connection signal="toggled" from="VBoxParent/HBoxContainer/CheckButton" to="." method="_on_check_button_toggled"]
 [connection signal="text_changed" from="VBoxParent/SettingsCollapsible/UrlContainer/URL" to="." method="_on_url_text_changed"]
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsible/SelectModel/Model" to="." method="_on_model_selected"]
-[connection signal="button_down" from="VBoxParent/SettingsCollapsible/SelectModel/TextureButton" to="." method="_on_texture_button_button_down"]
+[connection signal="button_down" from="VBoxParent/SettingsCollapsible/SelectModel/ReloadModelsButton" to="." method="_on_texture_button_button_down"]
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Modifier" to="." method="_on_shortcut_modifier_selected"]
 [connection signal="item_selected" from="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Key" to="." method="_on_shortcut_key_selected"]
 [connection signal="toggled" from="VBoxParent/ChatTitleContainer/EnableChat" to="." method="_on_enable_chat_toggled"]

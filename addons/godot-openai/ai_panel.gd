@@ -41,7 +41,7 @@ var _indicator: ColorRect
 @onready var _shortcut_key_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Key
 @onready var _info: RichTextLabel = $VBoxParent/VBoxContainer/Info
 @onready var _url_text_input: LineEdit = get_node("%URL")
-@onready var _reload_button: TextureButton = $VBoxParent/SettingsCollapsible/SelectModel/TextureButton
+@onready var _reload_button: TextureButton = $VBoxParent/SettingsCollapsible/SelectModel/ReloadModelsButton
 @onready var _loading_indicator: ColorRect = get_node("%Indicator")
 @onready var _settings_section: Control = $VBoxParent/SettingsCollapsible
 @onready var _chat_section: ScrollContainer = get_node("%ChatSection")
