@@ -49,6 +49,7 @@ const CHAT_PREFIX: String = """#This is a GDScript script using Godot 4.x.
 ## the suffix is trimmed first; if that is still not enough, the prefix is
 ## trimmed from its start.
 const MAX_LENGTH: int = 15000
+const HEADERS: PackedStringArray = ["Content-Type: application/json"]
 
 var model: String = ""
 var api_key: String = ""
@@ -58,12 +59,6 @@ var allow_multiline: bool = false
 var chat_history: Array[Dictionary] = []
 
 var _url: String = ""
-
-
-## Stub — the model list is populated by ai_panel.gd via the
-## [code]/v1/models/[/code] endpoint.
-func _get_models() -> Array:
-	return []
 
 
 func _set_model(model_name: String) -> void:
@@ -80,14 +75,10 @@ func _set_url(url: String) -> void:
 	_url = url
 
 
-func _send_user_prompt(user_prompt: String, user_suffix: String) -> void:
-	_get_completion(user_prompt, user_suffix)
-
-
 ## Trims [param prompt] and [param suffix] to [constant MAX_LENGTH] combined,
 ## then fires the HTTP request. The trimmed values are bound to the callback
 ## so [signal completion_received] carries what was actually sent.
-func _get_completion(prompt: String, suffix: String) -> void:
+func _send_user_prompt(prompt: String, suffix: String) -> void:
 	var diff := (prompt + suffix).length() - MAX_LENGTH
 	if diff > 0:
 		if suffix.length() > diff:
@@ -106,15 +97,13 @@ func _get_completion(prompt: String, suffix: String) -> void:
 		"max_tokens": 500,
 		"stop": "\n\n" if allow_multiline else "\n"
 	}
-	var headers: PackedStringArray = ["Content-Type: application/json"]
 	var http_request := HTTPRequest.new()
 	add_child(http_request)
 	http_request.request_completed.connect(
 		_on_request_completed.bind(prompt, suffix, http_request))
-	var json_body := JSON.stringify(body)
 	var error := http_request.request(
-		_url + "/v1/chat/completions", headers,
-		HTTPClient.METHOD_POST, json_body)
+		_url + "/v1/chat/completions", HEADERS,
+		HTTPClient.METHOD_POST, JSON.stringify(body))
 	if error != OK:
 		completion_error.emit(null)
 
@@ -132,6 +121,8 @@ func _on_request_completed(
 	parser.parse(body.get_string_from_utf8())
 	var response: Dictionary = parser.get_data()
 	if not response.has("choices"):
+		if is_instance_valid(http_request):
+			http_request.queue_free()
 		completion_error.emit(response)
 		return
 	var completion: String = response.choices[0].message.content
@@ -140,12 +131,8 @@ func _on_request_completed(
 	completion_received.emit(completion, pre, post)
 
 
-func _append_to_history(message: Dictionary) -> void:
-	chat_history.push_back(message)
-
-
 func chat_message(text: String) -> void:
-	_append_to_history({"role": "user", "content": text})
+	chat_history.push_back({"role": "user", "content": text})
 	var body := {
 		"model": model,
 		"messages": chat_history,
@@ -153,16 +140,14 @@ func chat_message(text: String) -> void:
 		"max_tokens": -1,
 		"stream": false
 	}
-	var headers: PackedStringArray = ["Content-Type: application/json"]
 	var http_request := HTTPRequest.new()
 	add_child(http_request)
-	http_request.request_completed.connect(_on_chat_complete)
-	var json_body := JSON.stringify(body)
+	http_request.request_completed.connect(_on_chat_complete.bind(http_request))
 	print_rich("[b]chat_message[/b] - Calling url:",
 		_url + "/v1/chat/completions", " - ", body)
 	var error := http_request.request(
-		_url + "/v1/chat/completions", headers,
-		HTTPClient.METHOD_POST, json_body)
+		_url + "/v1/chat/completions", HEADERS,
+		HTTPClient.METHOD_POST, JSON.stringify(body))
 	if error != OK:
 		completion_error.emit(null)
 
@@ -171,16 +156,21 @@ func _on_chat_complete(
 	_result: int,
 	_response_code: int,
 	_headers: PackedStringArray,
-	body: PackedByteArray
+	body: PackedByteArray,
+	http_request: HTTPRequest
 ) -> void:
 	var parser := JSON.new()
 	parser.parse(body.get_string_from_utf8())
 	var response: Dictionary = parser.get_data()
 	if not response.has("choices"):
+		if is_instance_valid(http_request):
+			http_request.queue_free()
 		completion_error.emit(response)
 		return
 	var completion: Dictionary = response.choices[0].message
-	_append_to_history(completion)
+	chat_history.push_back(completion)
+	if is_instance_valid(http_request):
+		http_request.queue_free()
 	chat_received.emit(completion.content)
 
 

@@ -5,6 +5,8 @@ extends Control
 
 const PREFERENCES_STORAGE_NAME: String = "user://godot-openai.cfg"
 const PREFERENCES_PASS: String = "F4fv2Jxpasp20VS5VSp2Yp2v9aNVJ21aRK"
+const BOT_THEME_PATH: String = "res://addons/godot-openai/asset/BotTheme.tres"
+const USER_THEME_PATH: String = "res://addons/godot-openai/asset/UserTheme.tres"
 
 ## Shader applied to the loading indicator overlay drawn at the caret.
 @export var icon_shader: ShaderMaterial
@@ -142,24 +144,20 @@ func _on_input_chat_gui_input(event: InputEvent) -> void:
 	if not key_event.pressed or key_event.keycode not in [KEY_ENTER, KEY_KP_ENTER]:
 		return
 	accept_event()
-
-	# Shift+Enter inserts a newline.
 	if key_event.shift_pressed:
 		_input_chat.insert_text_at_caret("\n")
-	
-	# Enter alone submits the message.
 	else:
 		_submit_chat()
 
 
-func _on_send_chat_message_2_pressed() -> void:
+func _on_clear_chat_pressed() -> void:
 	_get_llm()._clean_chat()
 	for c in _chat_container.get_children():
 		c.queue_free()
 
 
 func _submit_chat() -> void:
-	print_rich("[b]_on_send_chat_message_pressed[/b] - Sending message")
+	print_rich("[b]_submit_chat[/b] - Sending message")
 	var text := _input_chat.text
 	_user_message(text)
 	_input_chat.text = ""
@@ -174,8 +172,11 @@ func _on_models_loaded(
 	result: int,
 	_response_code: int,
 	_headers: PackedStringArray,
-	body: PackedByteArray
+	body: PackedByteArray,
+	http_request: HTTPRequest
 ) -> void:
+	if is_instance_valid(http_request):
+		http_request.queue_free()
 	_reload_button.visible = true
 	_loading_indicator.visible = false
 	if result != HTTPRequest.RESULT_SUCCESS:
@@ -318,12 +319,11 @@ func _get_code_editor() -> CodeEdit:
 
 
 func _request_completion() -> void:
-	print_rich("[b]request_completion[/b] - Asking to complete the code")
 	var pre_post := _get_pre_post()
 	var llm := _get_llm()
-	print_rich("[b]request_completion[/b] - LLM found", llm)
 	if not llm:
 		return
+	print_rich("[b]request_completion[/b] - Asking to complete the code")
 	llm._send_user_prompt(pre_post[0], pre_post[1])
 	_request_code_state = pre_post
 
@@ -332,15 +332,15 @@ func _request_completion() -> void:
 ## pre = all text up to (not including) the caret; post = all text after.
 func _get_pre_post() -> Array[String]:
 	var editor := _get_code_editor()
-	var pos := Vector2i(editor.get_caret_line(), editor.get_caret_column())
-	var pre: String = ""
-	var post: String = ""
-	for i in range(pos.x):
+	var line := editor.get_caret_line()
+	var col := editor.get_caret_column()
+	var pre := ""
+	for i in line:
 		pre += editor.get_line(i) + "\n"
-	pre += editor.get_line(pos.x).substr(0, pos.y)
-	post += editor.get_line(pos.x).substr(pos.y) + "\n"
-	for ii in range(pos.x + 1, editor.get_line_count()):
-		post += editor.get_line(ii) + "\n"
+	pre += editor.get_line(line).substr(0, col)
+	var post := editor.get_line(line).substr(col) + "\n"
+	for i in range(line + 1, editor.get_line_count()):
+		post += editor.get_line(i) + "\n"
 	var result: Array[String] = [pre, post]
 	return result
 
@@ -409,41 +409,32 @@ func _fetch_models() -> void:
 	_loading_indicator.visible = true
 	var http_request := HTTPRequest.new()
 	add_child(http_request)
-	http_request.request_completed.connect(_on_models_loaded)
+	http_request.request_completed.connect(_on_models_loaded.bind(http_request))
 	var error := http_request.request(_url_text_input.text + "/v1/models/")
 	if error != OK:
 		_reload_button.visible = true
 		_loading_indicator.visible = false
+		http_request.queue_free()
 
 
 func _bot_message(text: String) -> void:
-	var label := RichTextLabel.new()
-	var theme: Theme = ResourceLoader.load(
-		"res://addons/godot-openai/asset/BotTheme.tres")
-	label.theme = theme
-	label.text = text
-	label.bbcode_enabled = true
-	label.fit_content = true
-	label.selection_enabled = true
-	_chat_container.add_child(label)
-	var hseparator := HSeparator.new()
-	hseparator.custom_minimum_size = Vector2(0, 35)
-	_chat_container.add_child(hseparator)
-	await get_tree().process_frame
-	_chat_section.scroll_vertical = _chat_section.get_v_scroll_bar().max_value
+	await _add_chat_bubble(text, BOT_THEME_PATH, true)
 
 
 func _user_message(text: String) -> void:
+	await _add_chat_bubble(text, USER_THEME_PATH, false)
+
+
+func _add_chat_bubble(text: String, theme_path: String, selectable: bool) -> void:
 	var label := RichTextLabel.new()
-	var theme: Theme = ResourceLoader.load(
-		"res://addons/godot-openai/asset/UserTheme.tres")
-	label.theme = theme
+	label.theme = ResourceLoader.load(theme_path)
 	label.text = text
 	label.bbcode_enabled = true
 	label.fit_content = true
+	label.selection_enabled = selectable
 	_chat_container.add_child(label)
-	var hseparator := HSeparator.new()
-	hseparator.custom_minimum_size = Vector2(0, 35)
-	_chat_container.add_child(hseparator)
+	var separator := HSeparator.new()
+	separator.custom_minimum_size = Vector2(0, 35)
+	_chat_container.add_child(separator)
 	await get_tree().process_frame
 	_chat_section.scroll_vertical = _chat_section.get_v_scroll_bar().max_value
