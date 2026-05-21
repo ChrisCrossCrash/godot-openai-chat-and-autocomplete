@@ -40,6 +40,7 @@ var _indicator: ColorRect
 @onready var _model_select: OptionButton = $VBoxParent/SettingsCollapsible/SelectModel/Model
 @onready var _shortcut_modifier_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Modifier
 @onready var _shortcut_key_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Key
+@onready var _multiline_check: CheckButton = $VBoxParent/SettingsCollapsible/MultilineSetting/MultilineCheck
 @onready var _info: RichTextLabel = $VBoxParent/VBoxContainer/Info
 @onready var _url_text_input: LineEdit = get_node("%URL")
 @onready var _reload_button: TextureButton = $VBoxParent/SettingsCollapsible/SelectModel/ReloadModelsButton
@@ -114,6 +115,11 @@ func _on_shortcut_modifier_selected(index: int) -> void:
 
 func _on_shortcut_key_selected(index: int) -> void:
 	_set_shortcut_key(_shortcut_key_select.get_item_text(index))
+	_store_config()
+
+
+func _on_multiline_toggled(toggled_on: bool) -> void:
+	_openai_client.allow_multiline = toggled_on
 	_store_config()
 
 
@@ -376,6 +382,7 @@ func _store_config() -> void:
 	config.set_value("preferences", "model", _cur_model)
 	config.set_value("preferences", "shortcut_modifier", _cur_shortcut_modifier)
 	config.set_value("preferences", "shortcut_key", _cur_shortcut_key)
+	config.set_value("preferences", "allow_multiline", _openai_client.allow_multiline)
 	config.save_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
 
 
@@ -395,6 +402,10 @@ func _load_config() -> void:
 	_cur_shortcut_key = config.get_value(
 		"preferences", "shortcut_key", _cur_shortcut_key)
 	_apply_by_value(_shortcut_key_select, _cur_shortcut_key)
+	var allow_multiline: bool = config.get_value(
+		"preferences", "allow_multiline", false)
+	_openai_client.allow_multiline = allow_multiline
+	_multiline_check.button_pressed = allow_multiline
 
 
 ## Selects an [OptionButton] item whose display text matches [param value].
