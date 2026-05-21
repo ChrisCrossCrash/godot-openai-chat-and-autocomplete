@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://rv5dl08lcb8e"]
 
-[ext_resource type="Script" uid="uid://c35v6d8uydrkn" path="res://addons/copilot-advanced/Copilot.gd" id="1_pq1gj"]
-[ext_resource type="Material" uid="uid://cccmbprav6vgu" path="res://addons/copilot-advanced/small_icon.tres" id="2_gdw4j"]
-[ext_resource type="Script" uid="uid://yi83aic4bisd" path="res://addons/copilot-advanced/LmStudioCompletion.gd" id="3_loa2x"]
-[ext_resource type="Material" uid="uid://bl1rtf743e4l3" path="res://addons/copilot-advanced/large_icon.tres" id="3_xn70b"]
-[ext_resource type="Texture2D" uid="uid://dgko4rse8ssdn" path="res://addons/copilot-advanced/asset/refresh.png" id="4_sh1u6"]
-[ext_resource type="Texture2D" uid="uid://bglmfig6w4833" path="res://addons/copilot-advanced/asset/Check.png" id="5_446lv"]
-[ext_resource type="Theme" uid="uid://b8ev0etxsbepm" path="res://addons/copilot-advanced/asset/BotTheme.tres" id="6_n0bkr"]
+[ext_resource type="Script" uid="uid://2y4v8akchbkf" path="res://addons/godot-openai/ai_panel.gd" id="1_pq1gj"]
+[ext_resource type="Material" uid="uid://cccmbprav6vgu" path="res://addons/godot-openai/small_icon.tres" id="2_gdw4j"]
+[ext_resource type="Script" uid="uid://2njhqr5gawn0" path="res://addons/godot-openai/openai_client.gd" id="3_loa2x"]
+[ext_resource type="Material" uid="uid://bl1rtf743e4l3" path="res://addons/godot-openai/large_icon.tres" id="3_xn70b"]
+[ext_resource type="Texture2D" uid="uid://dgko4rse8ssdn" path="res://addons/godot-openai/asset/refresh.png" id="4_sh1u6"]
+[ext_resource type="Texture2D" uid="uid://bglmfig6w4833" path="res://addons/godot-openai/asset/Check.png" id="5_446lv"]
+[ext_resource type="Theme" uid="uid://b8ev0etxsbepm" path="res://addons/godot-openai/asset/BotTheme.tres" id="6_n0bkr"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f4c1j"]
 bg_color = Color(0.152941, 0.152941, 0.152941, 0.623529)
@@ -15,7 +15,7 @@ shadow_size = 1
 [sub_resource type="Theme" id="Theme_krmud"]
 Label/styles/normal = SubResource("StyleBoxFlat_f4c1j")
 
-[node name="Copilot" type="Control" unique_id=2105355940]
+[node name="AIPanel" type="Control" unique_id=2105355940]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -75,7 +75,7 @@ layout_mode = 2
 [node name="HowTo" type="Label" parent="VBoxParent" unique_id=1956083070]
 visible = false
 layout_mode = 2
-text = "Press the selected shortcut in the code editor to request a completion from Copilot at the current caret position"
+text = "Press the selected shortcut in the code editor to request a completion from the AI at the current caret position"
 autowrap_mode = 3
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent" unique_id=184218343]
@@ -374,9 +374,7 @@ text = "func load_config():
 	loader_interface.set_api_key(config.get_string(\"api_key"
 selection_enabled = true
 
-[node name="LLMs" type="Node" parent="." unique_id=784985070]
-
-[node name="LmStudioCompletion" type="Node" parent="LLMs" unique_id=347951962]
+[node name="OpenAIClient" type="Node" parent="." unique_id=347951962]
 script = ExtResource("3_loa2x")
 
 [node name="Version" type="Label" parent="." unique_id=405938775]
@@ -400,6 +398,6 @@ vertical_alignment = 2
 [connection signal="toggled" from="VBoxParent/ChatTitleContainer/EnableChat" to="." method="_on_enable_chat_toggled"]
 [connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/ClearChat" to="." method="_on_send_chat_message_2_pressed"]
 [connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/HBoxContainer/SendChatMessage" to="." method="_on_send_chat_message_pressed"]
-[connection signal="chat_received" from="LLMs/LmStudioCompletion" to="." method="_on_lm_studio_completion_chat_received"]
-[connection signal="completion_error" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_error"]
-[connection signal="completion_received" from="LLMs/LmStudioCompletion" to="." method="_on_code_completion_received"]
+[connection signal="chat_received" from="OpenAIClient" to="." method="_on_chat_received"]
+[connection signal="completion_error" from="OpenAIClient" to="." method="_on_code_completion_error"]
+[connection signal="completion_received" from="OpenAIClient" to="." method="_on_code_completion_received"]

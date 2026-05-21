@@ -1,26 +1,25 @@
 @tool
 extends Control
 
-@onready var llms = $LLMs
-@onready var lmStudioCompletions = $LLMs/LmStudioCompletion
+@onready var openai_client: Node = $OpenAIClient
 @onready var model_select = $VBoxParent/SettingsCollapsable/SelectModel/Model
 @onready var shortcut_modifier_select = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Modifier
 @onready var shortcut_key_select = $VBoxParent/SettingsCollapsable/ShortcutSetting/HBoxContainer/Key
 @onready var info: RichTextLabel = $VBoxParent/VBoxContainer/Info
-@onready var urlTextInput: LineEdit = get_node("%URL")
-@onready var reloadButton: TextureButton = $VBoxParent/SettingsCollapsable/SelectModel/TextureButton
-@onready var loadingIndicator: ColorRect = get_node("%Indicator")
+@onready var url_text_input: LineEdit = get_node("%URL")
+@onready var reload_button: TextureButton = $VBoxParent/SettingsCollapsable/SelectModel/TextureButton
+@onready var loading_indicator: ColorRect = get_node("%Indicator")
 
 
 # Section part
-@onready var settingsSection: Control = $VBoxParent/SettingsCollapsable
-@onready var chatSection: ScrollContainer = get_node("%ChatSection")
+@onready var settings_section: Control = $VBoxParent/SettingsCollapsable
+@onready var chat_section: ScrollContainer = get_node("%ChatSection")
 
 
 #Chat element
-@onready var sendButton: Button = get_node("%SendChatMessage")
-@onready var inputChat: TextEdit = get_node("%InputChat")
-@onready var chatContainer: VBoxContainer = get_node("%ChatContainer")
+@onready var send_button: Button = get_node("%SendChatMessage")
+@onready var input_chat: TextEdit = get_node("%InputChat")
+@onready var chat_container: VBoxContainer = get_node("%ChatContainer")
 
 @export var icon_shader : ShaderMaterial
 @export var highlight_color : Color
@@ -39,7 +38,7 @@ var allow_multiline = true
 var URL
 
 
-const PREFERENCES_STORAGE_NAME = "user://copilot-advanced.cfg"
+const PREFERENCES_STORAGE_NAME = "user://godot-openai.cfg"
 const PREFERENCES_PASS = "F4fv2Jxpasp20VS5VSp2Yp2v9aNVJ21aRK"
 
 func _ready():
@@ -241,7 +240,7 @@ func get_pre_post():
 #Wrinte ad add function
 
 func get_llm():
-	return lmStudioCompletions
+	return openai_client
 
 func matches_request_state(pre, post):
 	#Check if code passed for completion request matches current code
@@ -308,8 +307,8 @@ func load_config():
 	#Retrieve current settings from config file
 	var config = ConfigFile.new()
 	var err = config.load_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
-	lmStudioCompletions._set_url(urlTextInput.text)
-	updateLmStudioModel()
+	openai_client._set_url(url_text_input.text)
+	fetch_models()
 	if err != OK: return
 	cur_model = config.get_value("preferences", "model", cur_model)
 	apply_by_value(model_select, cur_model)
@@ -326,24 +325,24 @@ func apply_by_value(option_button, value):
 		if option_button.get_item_text(i) == value:
 			option_button.select(i)
 
-func updateLmStudioModel():
-	reloadButton.visible = false
-	loadingIndicator.visible = true
+func fetch_models():
+	reload_button.visible = false
+	loading_indicator.visible = true
 	var http_request = HTTPRequest.new()
 	add_child(http_request)
-	http_request.connect("request_completed",self._lmStudioModelLoaded)
-	var error = http_request.request(urlTextInput.text+"/v1/models/")
+	http_request.connect("request_completed", self._on_models_loaded)
+	var error = http_request.request(url_text_input.text+"/v1/models/")
 	if error != OK:
-		reloadButton.visible = true
-		loadingIndicator.visible = false
+		reload_button.visible = true
+		loading_indicator.visible = false
 		pass
 		# handle the error
 
-func _lmStudioModelLoaded(result, response_code, headers, body):
-	reloadButton.visible = true
-	loadingIndicator.visible = false
+func _on_models_loaded(result, response_code, headers, body):
+	reload_button.visible = true
+	loading_indicator.visible = false
 	if result != HTTPRequest.RESULT_SUCCESS:
-		print("Error on LmStudio model request")
+		print("Error fetching models")
 	var test_json_conv = JSON.new()
 	test_json_conv.parse(body.get_string_from_utf8())
 	var json = test_json_conv.get_data()
@@ -351,86 +350,82 @@ func _lmStudioModelLoaded(result, response_code, headers, body):
 	for model in json.data:
 		model_select.add_item(model.id)
 	model_select.select(0)
-	lmStudioCompletions._set_model(json.data[0].id)
+	openai_client._set_model(json.data[0].id)
 
 func _on_texture_button_button_down() -> void:
-	self.updateLmStudioModel()
+	fetch_models()
 
 
 func _on_url_text_changed(new_text: String) -> void:
-	lmStudioCompletions._set_url(new_text)
+	openai_client._set_url(new_text)
 	store_config()
 
 
 func _on_check_button_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		settingsSection.visible = true
+		settings_section.visible = true
 	else:
-		settingsSection.visible = false
-
-
-
+		settings_section.visible = false
 
 
 func _on_enable_chat_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		chatSection.visible = true
+		chat_section.visible = true
 	else:
-		chatSection.visible = false
+		chat_section.visible = false
 
 
-
-func _botMessage(text:String ) -> void:
+func _bot_message(text: String) -> void:
 	var label: RichTextLabel = RichTextLabel.new()
-	var theme = ResourceLoader.load("res://addons/copilot-advanced/asset/BotTheme.tres")
+	var theme = ResourceLoader.load("res://addons/godot-openai/asset/BotTheme.tres")
 	label.theme = theme
 	label.text = text
 	label.bbcode_enabled = true
 	label.fit_content = true
 	label.selection_enabled = true
-	chatContainer.add_child(label)
+	chat_container.add_child(label)
 	#Create horizontal separator
 	var hseparator: HSeparator = HSeparator.new()
 	hseparator.custom_minimum_size = Vector2(0,35)
-	chatContainer.add_child(hseparator)
+	chat_container.add_child(hseparator)
 	#Scroll to end
 	await get_tree().process_frame
-	chatSection.scroll_vertical = chatSection.get_v_scroll_bar().max_value
+	chat_section.scroll_vertical = chat_section.get_v_scroll_bar().max_value
 
 
-func _userMessage(text:String ) -> void:
+func _user_message(text: String) -> void:
 	var label: RichTextLabel = RichTextLabel.new()
-	var theme = ResourceLoader.load("res://addons/copilot-advanced/asset/UserTheme.tres")
+	var theme = ResourceLoader.load("res://addons/godot-openai/asset/UserTheme.tres")
 	label.theme = theme
 	label.text = text
 	label.bbcode_enabled = true
 	label.fit_content = true
-	chatContainer.add_child(label)
+	chat_container.add_child(label)
 	#Create horizontal separator
 	var hseparator: HSeparator = HSeparator.new()
 	hseparator.custom_minimum_size = Vector2(0,35)
-	chatContainer.add_child(hseparator)
+	chat_container.add_child(hseparator)
 	#Scroll to end
 	await get_tree().process_frame
-	chatSection.scroll_vertical = chatSection.get_v_scroll_bar().max_value
+	chat_section.scroll_vertical = chat_section.get_v_scroll_bar().max_value
 
 func _on_send_chat_message_pressed() -> void:
 	print_rich("[b]_on_send_chat_message_pressed[/b] - Sending message")
 	#Send chat message
-	if !inputChat:
-		inputChat = get_node("%InputChat")
-	var text = inputChat.text
+	if !input_chat:
+		input_chat = get_node("%InputChat")
+	var text = input_chat.text
 	#Logic to call the API
-	_userMessage(text)
-	inputChat.text = ""
+	_user_message(text)
+	input_chat.text = ""
 	get_llm().chat_message(text)
 
 
 func _on_send_chat_message_2_pressed() -> void:
 	get_llm()._clean_chat()
-	for c in chatContainer.get_children():
+	for c in chat_container.get_children():
 		c.queue_free()
 
 
-func _on_lm_studio_completion_chat_received(text: Variant) -> void:
-	_botMessage(text)
+func _on_chat_received(text: Variant) -> void:
+	_bot_message(text)

@@ -2,7 +2,7 @@
 extends EditorPlugin
 
 const version = "1.1.0"
-const scene_path = "res://addons/copilot-advanced/CopilotUI.tscn"
+const scene_path = "res://addons/godot-openai/ai_panel.tscn"
 
 var dock
 var editor_interface = EditorInterface

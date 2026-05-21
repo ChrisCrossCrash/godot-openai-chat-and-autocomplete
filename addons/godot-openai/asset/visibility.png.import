@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dgko4rse8ssdn"
-path="res://.godot/imported/refresh.png-d47441cc11b0761efc87fd8baf12f201.ctex"
+uid="uid://46u41pf6bc07"
+path="res://.godot/imported/visibility.png-deba303b84abd3b27887ea0f9a07a1dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/copilot-advanced/asset/refresh.png"
-dest_files=["res://.godot/imported/refresh.png-d47441cc11b0761efc87fd8baf12f201.ctex"]
+source_file="res://addons/godot-openai/asset/visibility.png"
+dest_files=["res://.godot/imported/visibility.png-deba303b84abd3b27887ea0f9a07a1dd.ctex"]
 
 [params]
 

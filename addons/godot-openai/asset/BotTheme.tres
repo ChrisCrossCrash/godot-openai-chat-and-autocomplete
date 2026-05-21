@@ -1,6 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://b8ev0etxsbepm"]
 
-[ext_resource type="StyleBox" uid="uid://c3t11ow0sl8x4" path="res://addons/copilot-advanced/asset/BotStyleBoxFlat.tres" id="1_cv5qb"]
+[ext_resource type="StyleBox" uid="uid://c3t11ow0sl8x4" path="res://addons/godot-openai/asset/BotStyleBoxFlat.tres" id="1_cv5qb"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vy4dj"]
 bg_color = Color(0, 0.701477, 0.567397, 1)
