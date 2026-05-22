@@ -236,6 +236,9 @@ func _on_models_loaded(
 	_openai_client._set_model(json.data[0].id)
 
 
+## Fills the modifier key dropdown with platform-appropriate options.[br]
+## macOS uses Cmd/Option/Control/Shift; all other platforms use Alt/Ctrl/Shift.
+## Restores the previously saved selection afterward.
 func _populate_modifiers() -> void:
 	_shortcut_modifier_select.clear()
 	var modifiers: Array[String] = ["Alt", "Ctrl", "Shift"]
