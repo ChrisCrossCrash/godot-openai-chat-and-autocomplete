@@ -15,6 +15,7 @@ onready
 pastable
 Qwen
 randf
+rfind
 Selfhost
 subdirs
 tscn

@@ -335,8 +335,29 @@ func _request_completion() -> void:
 	if not llm:
 		return
 	print_rich("[b]request_completion[/b] - Asking to complete the code")
-	llm._send_user_prompt(pre_post[0], pre_post[1])
+	llm._send_user_prompt(_strip_pre_indent(pre_post[0]), pre_post[1])
+	# Keep the original (unstripped) pre so _revert_change restores the caret correctly.
 	_request_code_state = pre_post
+
+
+## Removes trailing whitespace from the last line of [param pre] when that
+## line contains only whitespace (i.e. the caret is on an otherwise blank
+## indented line inside a block). The model outputs a leading tab on its first
+## generated line, so without this stripping the pre's trailing tab and the
+## model's leading tab concatenate, doubling the indent on the first line only.
+## Subsequent lines are unaffected — they follow newlines the model emits itself.[br]
+## [br]
+## Only the last line is examined; newlines are never stripped. This avoids the
+## problem that [method String.strip_edges] would also eat the newline before
+## the last line, moving the tag to the end of the previous line instead.
+func _strip_pre_indent(pre: String) -> String:
+	var last_newline := pre.rfind("\n")
+	if last_newline == -1:
+		return pre
+	var last_line := pre.substr(last_newline + 1)
+	if last_line.strip_edges() == "":
+		return pre.substr(0, last_newline + 1)
+	return pre
 
 
 ## Splits the active editor text at the caret into [pre, post].[br]
@@ -362,9 +383,15 @@ func _get_llm() -> Node:
 
 ## Returns true if the editor content still matches the snapshot in
 ## [member _request_code_state]. A false result means the user typed during
-## the request and the incoming completion should be discarded.
+## the request and the incoming completion should be discarded.[br]
+## [br]
+## The stored pre is stripped before comparing because [param pre] arriving
+## here is the version that was sent to the model (already stripped by
+## [method _strip_pre_indent]), while [member _request_code_state] holds the
+## original unstripped text (needed by [method _revert_change] to restore
+## the caret position correctly).
 func _matches_request_state(pre: String, post: String) -> bool:
-	return _request_code_state[0] == pre and _request_code_state[1] == post
+	return _strip_pre_indent(_request_code_state[0]) == pre and _request_code_state[1] == post
 
 
 func _set_model(model_name: String) -> void:
