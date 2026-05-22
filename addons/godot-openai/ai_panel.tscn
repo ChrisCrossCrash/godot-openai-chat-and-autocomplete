@@ -180,14 +180,6 @@ size_flags_horizontal = 10
 [node name="Modifier" type="OptionButton" parent="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer" unique_id=91119160]
 layout_mode = 2
 size_flags_horizontal = 10
-selected = 0
-item_count = 3
-popup/item_0/text = "Alt"
-popup/item_0/id = 0
-popup/item_1/text = "Ctrl"
-popup/item_1/id = 1
-popup/item_2/text = "Shift"
-popup/item_2/id = 2
 
 [node name="Key" type="OptionButton" parent="VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer" unique_id=802753586]
 layout_mode = 2
@@ -270,6 +262,7 @@ text = "Multiline"
 
 [node name="MultilineCheck" type="CheckButton" parent="VBoxParent/SettingsCollapsible/MultilineSetting" unique_id=123456703]
 layout_mode = 2
+button_pressed = true
 alignment = 2
 icon_alignment = 2
 

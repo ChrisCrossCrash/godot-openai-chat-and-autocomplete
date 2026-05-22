@@ -35,12 +35,16 @@ var _cur_shortcut_key: String = "C"
 ## Overlay node rendered at the caret position while a completion
 ## request is in flight.
 var _indicator: ColorRect
+var _pre_save_chat_enabled: bool = true
+var _pre_save_settings_visible: bool = true
 
 @onready var _openai_client: Node = $OpenAIClient
 @onready var _model_select: OptionButton = $VBoxParent/SettingsCollapsible/SelectModel/Model
 @onready var _shortcut_modifier_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Modifier
 @onready var _shortcut_key_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Key
 @onready var _multiline_check: CheckButton = $VBoxParent/SettingsCollapsible/MultilineSetting/MultilineCheck
+@onready var _settings_toggle: CheckButton = $VBoxParent/HBoxContainer/CheckButton
+@onready var _enable_chat_toggle: CheckButton = $VBoxParent/ChatTitleContainer/EnableChat
 @onready var _info: RichTextLabel = $VBoxParent/VBoxContainer/Info
 @onready var _url_text_input: LineEdit = get_node("%URL")
 @onready var _reload_button: TextureButton = $VBoxParent/SettingsCollapsible/SelectModel/ReloadModelsButton
@@ -55,6 +59,40 @@ func _ready() -> void:
 	_populate_modifiers()
 	_load_config()
 	_input_chat.gui_input.connect(_on_input_chat_gui_input)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_EDITOR_PRE_SAVE:
+		_strip_runtime_state_before_save()
+	elif what == NOTIFICATION_EDITOR_POST_SAVE:
+		_restore_runtime_state_after_save()
+
+
+## Clears runtime-populated and user-preference UI state before the scene is
+## serialized, so personal data (model list, shortcut choices, etc.) is never
+## written into the committed .tscn file.
+func _strip_runtime_state_before_save() -> void:
+	_pre_save_chat_enabled = _enable_chat_toggle.button_pressed
+	_pre_save_settings_visible = _settings_toggle.button_pressed
+	_model_select.clear()
+	_shortcut_modifier_select.clear()
+	_shortcut_key_select.selected = 2
+	_multiline_check.button_pressed = true
+	_settings_toggle.button_pressed = true
+	_settings_section.visible = true
+	_enable_chat_toggle.button_pressed = true
+	_chat_section.visible = true
+
+
+## Repopulates and restores all state that was cleared by
+## [method _strip_runtime_state_before_save].
+func _restore_runtime_state_after_save() -> void:
+	_populate_modifiers()
+	_load_config()
+	_enable_chat_toggle.button_pressed = _pre_save_chat_enabled
+	_chat_section.visible = _pre_save_chat_enabled
+	_settings_toggle.button_pressed = _pre_save_settings_visible
+	_settings_section.visible = _pre_save_settings_visible
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
