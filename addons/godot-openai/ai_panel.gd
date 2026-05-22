@@ -41,7 +41,6 @@ var _pre_save_settings_visible: bool = true
 @onready var _multiline_check: CheckButton = $VBoxParent/SettingsCollapsible/MultilineSetting/MultilineCheck
 @onready var _settings_toggle: CheckButton = $VBoxParent/HBoxContainer/CheckButton
 @onready var _enable_chat_toggle: CheckButton = $VBoxParent/ChatTitleContainer/EnableChat
-@onready var _info: RichTextLabel = $VBoxParent/VBoxContainer/Info
 @onready var _url_text_input: LineEdit = get_node("%URL")
 @onready var _reload_button: TextureButton = $VBoxParent/SettingsCollapsible/SelectModel/ReloadModelsButton
 @onready var _loading_indicator: ColorRect = get_node("%Indicator")
@@ -324,7 +323,6 @@ func _remove_loading_indicator() -> void:
 ## Replaces the entire editor text with pre + content + post and highlights
 ## the inserted lines. Revert is possible via [member _request_code_state].
 func _insert_completion(content: String, pre: String, post: String) -> void:
-	_info.text = content
 	var editor := _get_code_editor()
 	var scroll := editor.scroll_vertical
 	var caret_text := pre + content
