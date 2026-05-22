@@ -15,10 +15,6 @@ const _USER_THEME: Theme = preload("res://addons/godot-openai/asset/UserTheme.tr
 ## cleared on accept or revert.
 @export var highlight_color: Color
 
-## Injected by plugin.gd after the dock is instantiated. All code editor access
-## depends on this; completion requests silently no-op if it is not set.
-var editor_interface: EditorInterface
-
 ## Tracks the active editor screen; completion requests are suppressed
 ## when this is not [code]"Script"[/code].
 var _screen: String = "Script"
@@ -357,9 +353,7 @@ func _update_highlights() -> void:
 
 
 func _get_code_editor() -> CodeEdit:
-	if not editor_interface:
-		return null
-	var script_editor := editor_interface.get_script_editor()
+	var script_editor := EditorInterface.get_script_editor()
 	var base_editor := script_editor.get_current_editor()
 	if base_editor:
 		# Returns null for shader editor and other non-CodeEdit editors.

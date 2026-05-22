@@ -14,7 +14,6 @@ func _enter_tree() -> void:
 		ai_panel = load(SCENE_PATH).instantiate()
 		add_control_to_dock(EditorPlugin.DOCK_SLOT_RIGHT_UL, ai_panel)
 		main_screen_changed.connect(ai_panel._on_main_screen_changed)
-		ai_panel.editor_interface = EditorInterface
 
 
 func _exit_tree() -> void:
