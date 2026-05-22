@@ -1,11 +1,9 @@
 @tool
 extends HBoxContainer
 
+
 func setup(
-	text: String,
-	theme: Theme,
-	selectable: bool,
-	align_right: bool
+	text: String, theme: Theme, selectable: bool, align_right: bool
 ) -> void:
 	var label := $Label as RichTextLabel
 	var spacer := $Spacer as Control

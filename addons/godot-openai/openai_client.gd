@@ -105,10 +105,14 @@ func _send_user_prompt(prompt: String, suffix: String) -> void:
 	var http_request := HTTPRequest.new()
 	add_child(http_request)
 	http_request.request_completed.connect(
-		_on_request_completed.bind(prompt, suffix, http_request))
+		_on_request_completed.bind(prompt, suffix, http_request)
+	)
 	var error := http_request.request(
-		_url + "/v1/chat/completions", HEADERS,
-		HTTPClient.METHOD_POST, JSON.stringify(body))
+		_url + "/v1/chat/completions",
+		HEADERS,
+		HTTPClient.METHOD_POST,
+		JSON.stringify(body)
+	)
 	if error != OK:
 		completion_error.emit(null)
 
@@ -148,11 +152,18 @@ func chat_message(text: String) -> void:
 	var http_request := HTTPRequest.new()
 	add_child(http_request)
 	http_request.request_completed.connect(_on_chat_complete.bind(http_request))
-	print_rich("[b]chat_message[/b] - Calling url:",
-		_url + "/v1/chat/completions", " - ", body)
+	print_rich(
+		"[b]chat_message[/b] - Calling url:",
+		_url + "/v1/chat/completions",
+		" - ",
+		body
+	)
 	var error := http_request.request(
-		_url + "/v1/chat/completions", HEADERS,
-		HTTPClient.METHOD_POST, JSON.stringify(body))
+		_url + "/v1/chat/completions",
+		HEADERS,
+		HTTPClient.METHOD_POST,
+		JSON.stringify(body)
+	)
 	if error != OK:
 		completion_error.emit(null)
 

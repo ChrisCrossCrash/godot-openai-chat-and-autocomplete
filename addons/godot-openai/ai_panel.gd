@@ -108,7 +108,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_clear_highlights()
 		else:
 			_clear_highlights()
-	if _shortcut_key_pressed(key_event) and _shortcut_modifier_pressed(key_event):
+	if (
+		_shortcut_key_pressed(key_event)
+		and _shortcut_modifier_pressed(key_event)
+	):
 		_request_completion()
 
 
@@ -122,12 +125,11 @@ func _on_main_screen_changed(screen: String) -> void:
 
 
 func _on_code_completion_received(
-	completion: String,
-	pre: String,
-	post: String
+	completion: String, pre: String, post: String
 ) -> void:
-	print_rich("[b]_on_code_completion_received[/b] - Checking parameter: ",
-		completion)
+	print_rich(
+		"[b]_on_code_completion_received[/b] - Checking parameter: ", completion
+	)
 	_remove_loading_indicator()
 	if _matches_request_state(pre, post):
 		_insert_completion(completion, pre, post)
@@ -186,7 +188,10 @@ func _on_input_chat_gui_input(event: InputEvent) -> void:
 	if not event is InputEventKey:
 		return
 	var key_event := event as InputEventKey
-	if not key_event.pressed or key_event.keycode not in [KEY_ENTER, KEY_KP_ENTER]:
+	if (
+		not key_event.pressed
+		or key_event.keycode not in [KEY_ENTER, KEY_KP_ENTER]
+	):
 		return
 	accept_event()
 	if key_event.shift_pressed:
@@ -426,7 +431,10 @@ func _get_llm() -> Node:
 ## original unstripped text (needed by [method _revert_change] to restore
 ## the caret position correctly).
 func _matches_request_state(pre: String, post: String) -> bool:
-	return _strip_pre_indent(_request_code_state[0]) == pre and _request_code_state[1] == post
+	return (
+		_strip_pre_indent(_request_code_state[0]) == pre
+		and _request_code_state[1] == post
+	)
 
 
 func _set_model(model_name: String) -> void:
@@ -448,13 +456,17 @@ func _store_config() -> void:
 	config.set_value("preferences", "model", _cur_model)
 	config.set_value("preferences", "shortcut_modifier", _cur_shortcut_modifier)
 	config.set_value("preferences", "shortcut_key", _cur_shortcut_key)
-	config.set_value("preferences", "allow_multiline", _openai_client.allow_multiline)
+	config.set_value(
+		"preferences", "allow_multiline", _openai_client.allow_multiline
+	)
 	config.save_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
 
 
 func _load_config() -> void:
 	var config := ConfigFile.new()
-	var err := config.load_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
+	var err := config.load_encrypted_pass(
+		PREFERENCES_STORAGE_NAME, PREFERENCES_PASS
+	)
 	_openai_client._set_url(_url_text_input.text)
 	_fetch_models()
 	if err != OK:
@@ -463,13 +475,16 @@ func _load_config() -> void:
 	_apply_by_value(_model_select, _cur_model)
 	_set_model(_model_select.get_item_text(_model_select.selected))
 	_cur_shortcut_modifier = config.get_value(
-		"preferences", "shortcut_modifier", _cur_shortcut_modifier)
+		"preferences", "shortcut_modifier", _cur_shortcut_modifier
+	)
 	_apply_by_value(_shortcut_modifier_select, _cur_shortcut_modifier)
 	_cur_shortcut_key = config.get_value(
-		"preferences", "shortcut_key", _cur_shortcut_key)
+		"preferences", "shortcut_key", _cur_shortcut_key
+	)
 	_apply_by_value(_shortcut_key_select, _cur_shortcut_key)
 	var allow_multiline: bool = config.get_value(
-		"preferences", "allow_multiline", false)
+		"preferences", "allow_multiline", false
+	)
 	_openai_client.allow_multiline = allow_multiline
 	_multiline_check.button_pressed = allow_multiline
 
@@ -504,10 +519,7 @@ func _user_message(text: String) -> void:
 
 
 func _add_chat_bubble(
-	text: String,
-	theme: Theme,
-	selectable: bool,
-	align_right: bool
+	text: String, theme: Theme, selectable: bool, align_right: bool
 ) -> void:
 	var bubble: HBoxContainer = _CHAT_BUBBLE_SCENE.instantiate()
 	bubble.setup(text, theme, selectable, align_right)
