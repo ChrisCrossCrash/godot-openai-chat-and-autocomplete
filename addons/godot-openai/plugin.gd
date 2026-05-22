@@ -3,8 +3,6 @@ extends EditorPlugin
 ## Registers the AI assist dock and connects it to the editor's
 ## screen-change signal.
 
-## Informational version string, not enforced at runtime.
-const VERSION: String = "1.1.0"
 const SCENE_PATH: String = "res://addons/godot-openai/ai_panel.tscn"
 
 ## The instantiated AI panel dock. Held so it can be removed on plugin disable.
