@@ -9,8 +9,6 @@ const _CHAT_BUBBLE_SCENE: PackedScene = preload("res://addons/godot-openai/chat_
 const _BOT_THEME: Theme = preload("res://addons/godot-openai/asset/BotTheme.tres")
 const _USER_THEME: Theme = preload("res://addons/godot-openai/asset/UserTheme.tres")
 
-## Shader applied to the loading indicator overlay drawn at the caret.
-@export var icon_shader: ShaderMaterial
 ## Color applied to lines inserted by a pending completion,
 ## cleared on accept or revert.
 @export var highlight_color: Color
@@ -28,9 +26,6 @@ var _cur_highlight: Variant = null
 var _cur_model: String = ""
 var _cur_shortcut_modifier: String = "Control" if _is_mac() else "Alt"
 var _cur_shortcut_key: String = "C"
-## Overlay node rendered at the caret position while a completion
-## request is in flight.
-var _indicator: ColorRect
 var _pre_save_chat_enabled: bool = true
 var _pre_save_settings_visible: bool = true
 
@@ -116,7 +111,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _process(_delta: float) -> void:
 	_update_highlights()
-	_update_loading_indicator()
 
 
 func _on_main_screen_changed(screen: String) -> void:
@@ -129,7 +123,6 @@ func _on_code_completion_received(
 	print_rich(
 		"[b]_on_code_completion_received[/b] - Checking parameter: ", completion
 	)
-	_remove_loading_indicator()
 	if _matches_request_state(pre, post):
 		_insert_completion(completion, pre, post)
 	else:
@@ -137,7 +130,6 @@ func _on_code_completion_received(
 
 
 func _on_code_completion_error(error: Variant) -> void:
-	_remove_loading_indicator()
 	_clear_highlights()
 	push_error(error)
 
@@ -285,39 +277,6 @@ func _clear_highlights() -> void:
 
 func _undo_input() -> void:
 	_get_code_editor().undo()
-
-
-## Positions the loading indicator at the caret. Pass [param create] =
-## [code]true[/code] on the first call to instantiate the indicator;
-## subsequent calls just reposition it.
-func _update_loading_indicator(create: bool = false) -> void:
-	if _screen != "Script":
-		return
-	var editor := _get_code_editor()
-	if not editor:
-		return
-	var line_height := editor.get_line_height()
-	if not is_instance_valid(_indicator):
-		if not create:
-			return
-		_indicator = ColorRect.new()
-		_indicator.material = icon_shader
-		_indicator.custom_minimum_size = Vector2(line_height, line_height)
-		editor.add_child(_indicator)
-	var pos := editor.get_caret_draw_pos()
-	var pre_post := _get_pre_post()
-	# Caret position from Godot is unreliable; adjust offset for empty lines.
-	var is_on_empty_line := pre_post[0].right(1) == "\n"
-	var offset := line_height / 2 - 1 if is_on_empty_line else line_height - 1
-	_indicator.position = Vector2(pos.x, pos.y - offset)
-	editor.editable = false
-
-
-func _remove_loading_indicator() -> void:
-	if is_instance_valid(_indicator):
-		_indicator.queue_free()
-	var editor := _get_code_editor()
-	editor.editable = true
 
 
 ## Replaces the entire editor text with pre + content + post and highlights

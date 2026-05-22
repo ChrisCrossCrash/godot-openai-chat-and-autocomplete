@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://rv5dl08lcb8e"]
 
 [ext_resource type="Script" uid="uid://2y4v8akchbkf" path="res://addons/godot-openai/ai_panel.gd" id="1_pq1gj"]
-[ext_resource type="Material" uid="uid://cccmbprav6vgu" path="res://addons/godot-openai/small_icon.tres" id="2_gdw4j"]
 [ext_resource type="Script" uid="uid://2njhqr5gawn0" path="res://addons/godot-openai/openai_client.gd" id="3_loa2x"]
 [ext_resource type="Material" uid="uid://bl1rtf743e4l3" path="res://addons/godot-openai/large_icon.tres" id="3_xn70b"]
 [ext_resource type="Texture2D" uid="uid://dgko4rse8ssdn" path="res://addons/godot-openai/asset/refresh.png" id="4_sh1u6"]
@@ -23,7 +22,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_pq1gj")
-icon_shader = ExtResource("2_gdw4j")
 highlight_color = Color(0.223529, 0.254902, 0.298039, 1)
 
 [node name="VBoxParent" type="VBoxContainer" parent="." unique_id=895627243]
