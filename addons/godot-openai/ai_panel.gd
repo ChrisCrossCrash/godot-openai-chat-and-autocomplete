@@ -216,8 +216,12 @@ func _on_models_loaded(model_ids: PackedStringArray) -> void:
 	_model_select.clear()
 	for id in model_ids:
 		_model_select.add_item(id)
-	if model_ids.size() > 0:
+	if model_ids.size() == 0:
+		return
+	_apply_by_value(_model_select, _cur_model)
+	if _model_select.selected == -1:
 		_model_select.select(0)
+	_set_model(_model_select.get_item_text(_model_select.selected))
 
 
 ## Fills the modifier key dropdown with platform-appropriate options.[br]
@@ -417,8 +421,6 @@ func _load_config() -> void:
 	if err != OK:
 		return
 	_cur_model = config.get_value("preferences", "model", _cur_model)
-	_apply_by_value(_model_select, _cur_model)
-	_set_model(_cur_model)
 	_cur_shortcut_modifier = config.get_value(
 		"preferences", "shortcut_modifier", _cur_shortcut_modifier
 	)
