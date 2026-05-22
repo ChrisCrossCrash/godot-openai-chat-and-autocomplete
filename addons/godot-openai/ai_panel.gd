@@ -61,6 +61,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey:
 		return
 	var key_event := event as InputEventKey
+	# Godot fires InputEventKey on press, release, and held-key repeats (echo).
+	# Only handle the initial key-down to avoid duplicate completion requests.
+	if not key_event.pressed or key_event.echo:
+		return
 	if _cur_highlight:
 		if key_event.keycode == KEY_TAB:
 			_undo_input()
