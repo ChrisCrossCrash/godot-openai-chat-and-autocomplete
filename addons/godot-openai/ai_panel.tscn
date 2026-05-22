@@ -31,53 +31,6 @@ layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Indicator" type="ColorRect" parent="VBoxParent" unique_id=954492675]
-visible = false
-material = ExtResource("3_xn70b")
-custom_minimum_size = Vector2(200, 200)
-layout_mode = 2
-size_flags_horizontal = 4
-
-[node name="ContextTitle" type="Label" parent="VBoxParent" unique_id=1444124081]
-visible = false
-modulate = Color(1, 1, 1, 0.7)
-layout_mode = 2
-text = "Current Context"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 3
-
-[node name="Context" type="Label" parent="VBoxParent" unique_id=406468785]
-visible = false
-layout_mode = 2
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 3
-
-[node name="Status" type="Label" parent="VBoxParent" unique_id=346100403]
-visible = false
-modulate = Color(1, 1, 1, 0.7)
-custom_minimum_size = Vector2(2.08165e-12, 100)
-layout_mode = 2
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 3
-
-[node name="HowToTitle" type="Label" parent="VBoxParent" unique_id=1198081767]
-visible = false
-layout_mode = 2
-text = "How To Use"
-
-[node name="Separator1" type="HSeparator" parent="VBoxParent" unique_id=1774327225]
-visible = false
-layout_mode = 2
-
-[node name="HowTo" type="Label" parent="VBoxParent" unique_id=1956083070]
-visible = false
-layout_mode = 2
-text = "Press the selected shortcut in the code editor to request a completion from the AI at the current caret position"
-autowrap_mode = 3
-
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxParent" unique_id=184218343]
 layout_mode = 2
 
@@ -91,7 +44,7 @@ button_pressed = true
 alignment = 2
 icon_alignment = 2
 
-[node name="Separator2" type="HSeparator" parent="VBoxParent" unique_id=1323247447]
+[node name="Separator1" type="HSeparator" parent="VBoxParent" unique_id=1323247447]
 layout_mode = 2
 
 [node name="SettingsCollapsible" type="VBoxContainer" parent="VBoxParent" unique_id=1387880075]
@@ -266,11 +219,6 @@ button_pressed = true
 alignment = 2
 icon_alignment = 2
 
-[node name="Info box description" type="Label" parent="VBoxParent" unique_id=674128050]
-visible = false
-layout_mode = 2
-text = "Suggested code"
-
 [node name="ChatTitleContainer" type="HBoxContainer" parent="VBoxParent" unique_id=1488350037]
 layout_mode = 2
 
@@ -284,7 +232,7 @@ button_pressed = true
 alignment = 2
 icon_alignment = 2
 
-[node name="Separator3" type="HSeparator" parent="VBoxParent" unique_id=1348479665]
+[node name="Separator2" type="HSeparator" parent="VBoxParent" unique_id=1348479665]
 layout_mode = 2
 
 [node name="ChatSection" type="ScrollContainer" parent="VBoxParent" unique_id=1672989637]
@@ -358,44 +306,8 @@ custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 text = "Send"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxParent" unique_id=683418194]
-visible = false
-layout_mode = 2
-
-[node name="Info" type="RichTextLabel" parent="VBoxParent/VBoxContainer" unique_id=529720075]
-custom_minimum_size = Vector2(0, 200)
-layout_mode = 2
-focus_mode = 2
-text = "func load_config():
-	#Load preferences from user.cfg
-	var file_path = PREFERENCES_STORAGE_NAME
-	var reader = FileLoader.new(file_path)
-	reader.set_mode(\"read\")
-	var config = reader.load()
-	if not config:
-		return
-	#Update settings
-	model_select.update_from_config(config)
-	lmStudioCompletions.update_from_config(config)
-	oallamaCompletions.update_from_config(config)
-	providerInput.set_value(config.get_string(\"provider\"))
-	loader_interface.set_api_key(config.get_string(\"api_key"
-selection_enabled = true
-
 [node name="OpenAIClient" type="Node" parent="." unique_id=347951962]
 script = ExtResource("3_loa2x")
-
-[node name="Version" type="Label" parent="." unique_id=405938775]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -23.0
-grow_horizontal = 2
-grow_vertical = 0
-horizontal_alignment = 2
-vertical_alignment = 2
 
 [connection signal="toggled" from="VBoxParent/HBoxContainer/CheckButton" to="." method="_on_check_button_toggled"]
 [connection signal="text_changed" from="VBoxParent/SettingsCollapsible/UrlContainer/URL" to="." method="_on_url_text_changed"]
