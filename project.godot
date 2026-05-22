@@ -17,7 +17,6 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Godot OpenAI Chat and Autocomplete"
 run/main_scene="uid://rv5dl08lcb8e"
 config/features=PackedStringArray("4.6")
-config/icon="res://icon.png"
 
 [editor_plugins]
 
