@@ -24,10 +24,10 @@ godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/ -ginclude_subdirs
 extends GutTest
 
 func before_each():
-    # setup per-test state
+	# setup per-test state
 
 func test_something():
-    assert_eq(actual, expected)
+	assert_eq(actual, expected)
 ```
 
 GUT configuration (search dirs, prefix/suffix) is in [.gut_editor_config.json](.gut_editor_config.json).
