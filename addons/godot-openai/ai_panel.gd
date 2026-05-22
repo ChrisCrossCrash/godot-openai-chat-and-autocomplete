@@ -473,7 +473,7 @@ func _load_config() -> void:
 		return
 	_cur_model = config.get_value("preferences", "model", _cur_model)
 	_apply_by_value(_model_select, _cur_model)
-	_set_model(_model_select.get_item_text(_model_select.selected))
+	_set_model(_cur_model)
 	_cur_shortcut_modifier = config.get_value(
 		"preferences", "shortcut_modifier", _cur_shortcut_modifier
 	)
