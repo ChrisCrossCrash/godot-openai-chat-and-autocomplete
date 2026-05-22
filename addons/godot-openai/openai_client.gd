@@ -57,7 +57,6 @@ const MAX_LENGTH: int = 15000
 const HEADERS: PackedStringArray = ["Content-Type: application/json"]
 
 var model: String = ""
-var api_key: String = ""
 ## When true the stop sequence is [code]"\n\n"[/code], allowing
 ## multi-line completions. When false the stop is [code]"\n"[/code].
 var allow_multiline: bool = false
@@ -69,11 +68,6 @@ var _url: String = ""
 func _set_model(model_name: String) -> void:
 	print_rich("[b]_set_model[/b] - Set model: ", model_name)
 	model = model_name
-
-
-func _set_api_key(key: String) -> void:
-	print_rich("[b]_set_api_key[/b] - Set apiKey: ", key)
-	api_key = key
 
 
 func _set_url(url: String) -> void:
