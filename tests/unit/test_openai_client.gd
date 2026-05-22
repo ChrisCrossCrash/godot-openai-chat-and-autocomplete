@@ -1,30 +1,25 @@
 extends GutTest
 
-const OpenAIClientScript = preload("res://addons/godot-openai/openai_client.gd")
+const OpenAIClientScene := preload("res://addons/godot-openai/openai_client.tscn")
 
-var client: Node
+var client: OpenAIClient
 
 
 func before_each() -> void:
-	client = OpenAIClientScript.new()
+	client = OpenAIClientScene.instantiate()
 	add_child_autofree(client)
-	client._clean_chat()
+	client.clean_chat()
 
 
 func test_initial_chat_history_is_empty() -> void:
-	var fresh: Node = OpenAIClientScript.new()
+	var fresh: OpenAIClient = OpenAIClientScene.instantiate()
 	add_child_autofree(fresh)
 	assert_eq(fresh.chat_history.size(), 0)
 
 
 func test_set_model_stores_name() -> void:
-	client._set_model("llama3")
+	client.set_model("llama3")
 	assert_eq(client.model, "llama3")
-
-
-func test_set_api_key_stores_key() -> void:
-	client._set_api_key("test-key-123")
-	assert_eq(client.api_key, "test-key-123")
 
 
 func test_has_completion_received_signal() -> void:

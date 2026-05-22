@@ -40,11 +40,11 @@ The addon lives entirely in [addons/godot-openai/](addons/godot-openai/) and com
 
 - [plugin.gd](addons/godot-openai/plugin.gd) — `EditorPlugin` entry point. Loads `ai_panel.tscn` as a dock and connects `main_screen_changed`.
 - [ai_panel.gd](addons/godot-openai/ai_panel.gd) — Main UI controller. Orchestrates all completion/chat flows, manages settings, and handles keyboard shortcuts.
-- [openai_client.gd](addons/godot-openai/openai_client.gd) — Handles all HTTP communication. Emits `completion_received(text, pre, post)`, `chat_received(text)`, and `completion_error(error)` signals back to `ai_panel.gd`.
+- [openai_client.gd](addons/godot-openai/openai_client.gd) — Handles all HTTP communication. Emits `completion_received(text, pre, post)`, `chat_received(text)`, `completion_error(error)`, and `models_received(model_ids)` signals back to `ai_panel.gd`. Instantiated via [openai_client.tscn](addons/godot-openai/openai_client.tscn), which provides three pre-created `HTTPRequest` child nodes.
 
 ### Signal Connections
 
-Signals from [openai_client.gd](addons/godot-openai/openai_client.gd) are connected to their handlers in `ai_panel.gd` via **`ai_panel.tscn`**, not in code.
+`completion_received`, `chat_received`, and `completion_error` from [openai_client.gd](addons/godot-openai/openai_client.gd) are connected to their handlers in `ai_panel.gd` via **`ai_panel.tscn`**. `models_received` is connected in code in `ai_panel._ready()`. The three internal `HTTPRequest` signals are connected in `openai_client._ready()`.
 
 ### Completion Data Flow
 
@@ -52,8 +52,8 @@ Signals from [openai_client.gd](addons/godot-openai/openai_client.gd) are connec
 User presses shortcut (default Alt+C / Cmd+C)
   → ai_panel.gd::_request_completion()
   → _get_pre_post() splits code at caret → [pre, post]
-  → _get_llm() returns openai_client
-  → openai_client._send_user_prompt(pre, post)
+  → _get_openai_client() returns openai_client
+  → openai_client.send_user_prompt(pre, post)
   → HTTP response → completion_received signal
   → ai_panel._on_code_completion_received()
   → _insert_completion() writes code, highlights new lines
@@ -65,13 +65,13 @@ User presses shortcut (default Alt+C / Cmd+C)
 ```
 User types message and clicks Send
   → ai_panel._on_send_chat_message_pressed()
-  → _get_llm().chat_message(text)
+  → _get_openai_client().chat_message(text)
   → HTTP response → chat_received signal
   → ai_panel._on_chat_received()
   → _bot_message() appends RichTextLabel to chat container
 ```
 
-The Clear button calls `_clean_chat()`, which resets `chat_history` and re-injects the system prompt.
+The Clear button calls `clean_chat()`, which resets `chat_history` and re-injects the system prompt.
 
 ### Fill-in-the-Middle Strategy
 
@@ -81,7 +81,7 @@ LM Studio uses a system prompt (`COMPLETION_SYSTEM`) plus a user message with an
 
 - **Code trimming**: Prompts are capped at `MAX_LENGTH` (~15000 chars); suffix is trimmed first.
 - **`@tool` annotation**: All scripts run inside the editor, not at game runtime.
-- **Encrypted config**: Settings (including API keys) are stored via `ConfigFile.save_encrypted_pass()` at `user://godot-openai.cfg`. The passphrase is hardcoded in `ai_panel.gd::PREFERENCES_PASS`.
+- **Encrypted config**: Settings are stored via `ConfigFile.save_encrypted_pass()` at `user://godot-openai.cfg`. The passphrase is hardcoded in `ai_panel.gd::PREFERENCES_PASS`.
 - **URL not persisted**: The server URL is **not** saved to config. It defaults to `http://127.0.0.1:1234` on each load.
 - **Platform shortcuts**: Modifier keys differ on macOS (Cmd/Option) vs Windows/Linux (Ctrl/Alt). `_is_mac()` checks `OS.get_name() == "macOS"`.
 

@@ -1,4 +1,5 @@
 @tool
+class_name OpenAIClient
 extends Node
 ## HTTP client for OpenAI-compatible backends. Handles fill-in-the-middle
 ## completions and multi-turn chat via /v1/chat/completions.
@@ -10,6 +11,8 @@ signal chat_received(text: String)
 ## Emitted on HTTP error or when the API response contains no
 ## [code]choices[/code] key.
 signal completion_error(error: Variant)
+## Emitted after [method fetch_models] completes. Empty array indicates failure.
+signal models_received(model_ids: PackedStringArray)
 
 ## Marker placed between prefix and suffix in the user message so the
 ## model knows where to insert code.
@@ -63,21 +66,39 @@ var allow_multiline: bool = false
 var chat_history: Array[Dictionary] = []
 
 var _url: String = ""
+var _pending_pre: String = ""
+var _pending_post: String = ""
+
+@onready var chat_req: HTTPRequest = $ChatHTTPRequest
+@onready var completion_req: HTTPRequest = $CompletionHTTPRequest
+@onready var fetch_models_req: HTTPRequest = $FetchModelsHTTPRequest
 
 
-func _set_model(model_name: String) -> void:
-	print_rich("[b]_set_model[/b] - Set model: ", model_name)
+func _ready() -> void:
+	completion_req.request_completed.connect(_on_request_completed)
+	chat_req.request_completed.connect(_on_chat_complete)
+	fetch_models_req.request_completed.connect(_on_fetch_models_completed)
+
+
+func set_model(model_name: String) -> void:
+	print_rich("[b]set_model[/b] - Set model: ", model_name)
 	model = model_name
 
 
-func _set_url(url: String) -> void:
+func set_url(url: String) -> void:
 	_url = url
 
 
+func fetch_models() -> void:
+	var error := fetch_models_req.request(_url + "/v1/models/")
+	if error != OK:
+		models_received.emit(PackedStringArray())
+
+
 ## Trims [param prompt] and [param suffix] to [constant MAX_LENGTH] combined,
-## then fires the HTTP request. The trimmed values are bound to the callback
-## so [signal completion_received] carries what was actually sent.
-func _send_user_prompt(prompt: String, suffix: String) -> void:
+## then fires the HTTP request. The trimmed values are stored so
+## [signal completion_received] carries what was actually sent.
+func send_user_prompt(prompt: String, suffix: String) -> void:
 	var diff := (prompt + suffix).length() - MAX_LENGTH
 	if diff > 0:
 		if suffix.length() > diff:
@@ -85,6 +106,8 @@ func _send_user_prompt(prompt: String, suffix: String) -> void:
 		else:
 			prompt = prompt.substr(diff - suffix.length())
 			suffix = ""
+	_pending_pre = prompt
+	_pending_post = suffix
 	var messages: Array[Dictionary] = [
 		{"role": "system", "content": COMPLETION_SYSTEM},
 		{"role": "user", "content": prompt + INSERT_TAG + suffix}
@@ -96,12 +119,7 @@ func _send_user_prompt(prompt: String, suffix: String) -> void:
 		"max_tokens": 500,
 		"stop": "\n\n" if allow_multiline else "\n"
 	}
-	var http_request := HTTPRequest.new()
-	add_child(http_request)
-	http_request.request_completed.connect(
-		_on_request_completed.bind(prompt, suffix, http_request)
-	)
-	var error := http_request.request(
+	var error := completion_req.request(
 		_url + "/v1/chat/completions",
 		HEADERS,
 		HTTPClient.METHOD_POST,
@@ -111,27 +129,27 @@ func _send_user_prompt(prompt: String, suffix: String) -> void:
 		completion_error.emit(null)
 
 
+## Resets [member chat_history] to a single system message,
+## discarding all prior turns.
+func clean_chat() -> void:
+	print_rich("[b]clean_chat[/b] - Deleting chat history")
+	chat_history = [{"role": "system", "content": CHAT_PREFIX}]
+
+
 func _on_request_completed(
 	_result: int,
 	_response_code: int,
 	_headers: PackedStringArray,
-	body: PackedByteArray,
-	pre: String,
-	post: String,
-	http_request: HTTPRequest
+	body: PackedByteArray
 ) -> void:
 	var parser := JSON.new()
 	parser.parse(body.get_string_from_utf8())
 	var response: Dictionary = parser.get_data()
 	if not response.has("choices"):
-		if is_instance_valid(http_request):
-			http_request.queue_free()
 		completion_error.emit(response)
 		return
 	var completion: String = response.choices[0].message.content
-	if is_instance_valid(http_request):
-		http_request.queue_free()
-	completion_received.emit(completion, pre, post)
+	completion_received.emit(completion, _pending_pre, _pending_post)
 
 
 func chat_message(text: String) -> void:
@@ -143,16 +161,13 @@ func chat_message(text: String) -> void:
 		"max_tokens": -1,
 		"stream": false
 	}
-	var http_request := HTTPRequest.new()
-	add_child(http_request)
-	http_request.request_completed.connect(_on_chat_complete.bind(http_request))
 	print_rich(
 		"[b]chat_message[/b] - Calling url:",
 		_url + "/v1/chat/completions",
 		" - ",
 		body
 	)
-	var error := http_request.request(
+	var error := chat_req.request(
 		_url + "/v1/chat/completions",
 		HEADERS,
 		HTTPClient.METHOD_POST,
@@ -166,26 +181,34 @@ func _on_chat_complete(
 	_result: int,
 	_response_code: int,
 	_headers: PackedStringArray,
-	body: PackedByteArray,
-	http_request: HTTPRequest
+	body: PackedByteArray
 ) -> void:
 	var parser := JSON.new()
 	parser.parse(body.get_string_from_utf8())
 	var response: Dictionary = parser.get_data()
 	if not response.has("choices"):
-		if is_instance_valid(http_request):
-			http_request.queue_free()
 		completion_error.emit(response)
 		return
 	var completion: Dictionary = response.choices[0].message
 	chat_history.push_back(completion)
-	if is_instance_valid(http_request):
-		http_request.queue_free()
 	chat_received.emit(completion.content)
 
 
-## Resets [member chat_history] to a single system message,
-## discarding all prior turns.
-func _clean_chat() -> void:
-	print_rich("[b]_clean_chat[/b] - Deleting chat history")
-	chat_history = [{"role": "system", "content": CHAT_PREFIX}]
+func _on_fetch_models_completed(
+	result: int,
+	_response_code: int,
+	_headers: PackedStringArray,
+	body: PackedByteArray
+) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS:
+		models_received.emit(PackedStringArray())
+		return
+	var parser := JSON.new()
+	parser.parse(body.get_string_from_utf8())
+	var json := parser.get_data()
+	var ids := PackedStringArray()
+	for m in json.data:
+		ids.append(m.id)
+	if ids.size() > 0:
+		set_model(ids[0])
+	models_received.emit(ids)

@@ -49,6 +49,7 @@ func _ready() -> void:
 	_populate_modifiers()
 	_load_config()
 	_input_chat.gui_input.connect(_on_input_chat_gui_input)
+	_openai_client.models_received.connect(_on_models_loaded)
 
 
 func _notification(what: int) -> void:
@@ -159,7 +160,7 @@ func _on_texture_button_button_down() -> void:
 
 
 func _on_url_text_changed(new_text: String) -> void:
-	_openai_client._set_url(new_text)
+	_openai_client.set_url(new_text)
 	_store_config()
 
 
@@ -192,7 +193,7 @@ func _on_input_chat_gui_input(event: InputEvent) -> void:
 
 
 func _on_clear_chat_pressed() -> void:
-	_get_llm()._clean_chat()
+	_get_openai_client().clean_chat()
 	for c in _chat_container.get_children():
 		c.queue_free()
 
@@ -202,34 +203,21 @@ func _submit_chat() -> void:
 	var text := _input_chat.text
 	_user_message(text)
 	_input_chat.text = ""
-	_get_llm().chat_message(text)
+	_get_openai_client().chat_message(text)
 
 
 func _on_chat_received(text: String) -> void:
 	_bot_message(text)
 
 
-func _on_models_loaded(
-	result: int,
-	_response_code: int,
-	_headers: PackedStringArray,
-	body: PackedByteArray,
-	http_request: HTTPRequest
-) -> void:
-	if is_instance_valid(http_request):
-		http_request.queue_free()
+func _on_models_loaded(model_ids: PackedStringArray) -> void:
 	_reload_button.visible = true
 	_loading_indicator.visible = false
-	if result != HTTPRequest.RESULT_SUCCESS:
-		print("Error fetching models")
-	var parser := JSON.new()
-	parser.parse(body.get_string_from_utf8())
-	var json := parser.get_data()
 	_model_select.clear()
-	for model in json.data:
-		_model_select.add_item(model.id)
-	_model_select.select(0)
-	_openai_client._set_model(json.data[0].id)
+	for id in model_ids:
+		_model_select.add_item(id)
+	if model_ids.size() > 0:
+		_model_select.select(0)
 
 
 ## Fills the modifier key dropdown with platform-appropriate options.[br]
@@ -328,11 +316,11 @@ func _get_code_editor() -> CodeEdit:
 
 func _request_completion() -> void:
 	var pre_post := _get_pre_post()
-	var llm := _get_llm()
-	if not llm:
+	var openai_client := _get_openai_client()
+	if not openai_client:
 		return
 	print_rich("[b]request_completion[/b] - Asking to complete the code")
-	llm._send_user_prompt(_strip_pre_indent(pre_post[0]), pre_post[1])
+	openai_client.send_user_prompt(_strip_pre_indent(pre_post[0]), pre_post[1])
 	# Keep the original (unstripped) pre so _revert_change restores the caret correctly.
 	_request_code_state = pre_post
 
@@ -374,7 +362,7 @@ func _get_pre_post() -> Array[String]:
 	return result
 
 
-func _get_llm() -> Node:
+func _get_openai_client() -> OpenAIClient:
 	return _openai_client
 
 
@@ -397,7 +385,7 @@ func _matches_request_state(pre: String, post: String) -> bool:
 func _set_model(model_name: String) -> void:
 	print_rich("[b]set_model[/b] - Set model: ", model_name)
 	_cur_model = model_name
-	_get_llm()._set_model(model_name)
+	_get_openai_client().set_model(model_name)
 
 
 func _set_shortcut_modifier(modifier: String) -> void:
@@ -424,7 +412,7 @@ func _load_config() -> void:
 	var err := config.load_encrypted_pass(
 		PREFERENCES_STORAGE_NAME, PREFERENCES_PASS
 	)
-	_openai_client._set_url(_url_text_input.text)
+	_openai_client.set_url(_url_text_input.text)
 	_fetch_models()
 	if err != OK:
 		return
@@ -457,14 +445,7 @@ func _apply_by_value(option_button: OptionButton, value: String) -> void:
 func _fetch_models() -> void:
 	_reload_button.visible = false
 	_loading_indicator.visible = true
-	var http_request := HTTPRequest.new()
-	add_child(http_request)
-	http_request.request_completed.connect(_on_models_loaded.bind(http_request))
-	var error := http_request.request(_url_text_input.text + "/v1/models/")
-	if error != OK:
-		_reload_button.visible = true
-		_loading_indicator.visible = false
-		http_request.queue_free()
+	_openai_client.fetch_models()
 
 
 func _bot_message(text: String) -> void:
