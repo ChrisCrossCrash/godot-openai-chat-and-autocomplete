@@ -16,6 +16,7 @@
   ],
   "ignorePaths": [
     "addons/gut/**",
+    "addons/c3_utils/**",
     "*.tscn",
     "*.tres",
     "*.uid",

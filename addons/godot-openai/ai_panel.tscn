@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://dgko4rse8ssdn" path="res://addons/godot-openai/asset/refresh.png" id="4_sh1u6"]
 [ext_resource type="Texture2D" uid="uid://bglmfig6w4833" path="res://addons/godot-openai/asset/Check.png" id="5_446lv"]
 [ext_resource type="Theme" uid="uid://b8ev0etxsbepm" path="res://addons/godot-openai/asset/BotTheme.tres" id="6_n0bkr"]
-[ext_resource type="PackedScene" uid="uid://786wpubvnx4p" path="res://addons/godot-openai/openai_client.tscn" id="6_x7f3p"]
+[ext_resource type="PackedScene" uid="uid://b0en8jycd6b2p" path="res://addons/c3_utils/c3_openai_client/c3_openai_client.tscn" id="6_x7f3p"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f4c1j"]
 bg_color = Color(0.152941, 0.152941, 0.152941, 0.623529)
@@ -316,6 +316,3 @@ text = "Send"
 [connection signal="toggled" from="VBoxParent/ChatTitleContainer/EnableChat" to="." method="_on_enable_chat_toggled"]
 [connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer/ChatButtonRow/ClearChat" to="." method="_on_clear_chat_pressed"]
 [connection signal="pressed" from="VBoxParent/ChatSection/VBoxContainer/MarginContainer/ChatInputContainer/ChatButtonRow/SendChatMessage" to="." method="_on_send_chat_message_pressed"]
-[connection signal="chat_received" from="OpenAIClient" to="." method="_on_chat_received"]
-[connection signal="completion_error" from="OpenAIClient" to="." method="_on_code_completion_error"]
-[connection signal="completion_received" from="OpenAIClient" to="." method="_on_code_completion_received"]

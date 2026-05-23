@@ -8,6 +8,47 @@ const PREFERENCES_PASS: String = "F4fv2Jxpasp20VS5VSp2Yp2v9aNVJ21aRK"
 const _CHAT_BUBBLE_SCENE: PackedScene = preload("res://addons/godot-openai/chat_bubble.tscn")
 const _BOT_THEME: Theme = preload("res://addons/godot-openai/asset/BotTheme.tres")
 const _USER_THEME: Theme = preload("res://addons/godot-openai/asset/UserTheme.tres")
+const INSERT_TAG: String = "!INSERT_CODE_HERE!"
+const COMPLETION_SYSTEM: String = """You are a code completion assistant for GDScript in Godot 4.x (GDScript 2.0 syntax).
+Key syntax rules:
+- Use @export annotation for exports
+- Use Node3D instead of Spatial, and position instead of translation
+- Use randf_range and randi_range instead of rand_range
+- Connect signals via node.SIGNAL_NAME.connect(Callable(TARGET_OBJECT, TARGET_FUNC))
+- Use rad_to_deg instead of rad2deg
+- Use PackedByteArray instead of PoolByteArray
+- Use instantiate instead of instance
+- You can't use enumerate(OBJECT). Instead, use "for i in len(OBJECT):"
+
+Remember, this is not Python. It's GDScript for use in Godot 4.x.
+
+You may only respond with code, never add explanations. The user message contains a !INSERT_CODE_HERE! tag. Only respond with code to insert at that point. Never repeat the full script — only the inserted portion. Treat this as autocompletion: continue any unfinished word or expression before the tag.
+
+Indentation: GDScript uses tabs only, never spaces. Count the tabs that appear before !INSERT_CODE_HERE! on its line — call that number N. Do NOT add leading whitespace to your very first output character (those N tabs are already in place). Every subsequent line you output must begin with N tabs as the base, plus one extra tab per additional nesting level. Never reset to column 0 for any line.
+
+Example: if the context is "func foo():\n\t!INSERT_CODE_HERE!" (N=1), a correct two-branch output is:
+if condition:\n\t\treturn true\nreturn false
+where every line after the first starts with one base tab."""
+## System message injected at position 0 of every conversation. Re-injected when
+## the chat is cleared so the model always has the GDScript context.
+const CHAT_PREFIX: String = """This is a GDScript script using Godot 4.x.
+That means the new GDScript 2.0 syntax is used. Here are some of the important changes that were introduced in Godot 4:
+- Use @export annotation for exports
+- Use Node3D instead of Spatial, and position instead of translation
+- Use randf_range and randi_range instead of rand_range
+- Connect signals via node.SIGNAL_NAME.connect(Callable(TARGET_OBJECT, TARGET_FUNC))
+- Use rad_to_deg instead of rad2deg
+- Use PackedByteArray instead of PoolByteArray
+- Use instantiate instead of instance
+- You can't use enumerate(OBJECT). Instead, use "for i in len(OBJECT):"
+
+Remember, this is not Python. It's GDScript for use in Godot 4.x.
+You are a helpful assistant specializing in GDScript and Godot 4.x development.
+"""
+## Maximum combined character length of prompt prefix + suffix. If exceeded,
+## the suffix is trimmed first; if that is still not enough, the prefix is
+## trimmed from its start.
+const MAX_LENGTH: int = 15000
 
 ## Color applied to lines inserted by a pending completion,
 ## cleared on accept or revert.
@@ -28,8 +69,10 @@ var _cur_shortcut_modifier: String = "Control" if _is_mac() else "Alt"
 var _cur_shortcut_key: String = "C"
 var _pre_save_chat_enabled: bool = true
 var _pre_save_settings_visible: bool = true
+var _allow_multiline: bool = false
+var _chat_history: Array[Dictionary] = []
 
-@onready var _openai_client: Node = $OpenAIClient
+@onready var _openai_client: C3OpenAIClient = $OpenAIClient
 @onready var _model_select: OptionButton = $VBoxParent/SettingsCollapsible/SelectModel/Model
 @onready var _shortcut_modifier_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Modifier
 @onready var _shortcut_key_select: OptionButton = $VBoxParent/SettingsCollapsible/ShortcutSetting/HBoxContainer/Key
@@ -46,10 +89,10 @@ var _pre_save_settings_visible: bool = true
 
 
 func _ready() -> void:
+	_reset_chat_history()
 	_populate_modifiers()
 	_load_config()
 	_input_chat.gui_input.connect(_on_input_chat_gui_input)
-	_openai_client.models_received.connect(_on_models_loaded)
 
 
 func _notification(what: int) -> void:
@@ -151,7 +194,7 @@ func _on_shortcut_key_selected(index: int) -> void:
 
 
 func _on_multiline_toggled(toggled_on: bool) -> void:
-	_openai_client.allow_multiline = toggled_on
+	_allow_multiline = toggled_on
 	_store_config()
 
 
@@ -160,7 +203,7 @@ func _on_texture_button_button_down() -> void:
 
 
 func _on_url_text_changed(new_text: String) -> void:
-	_openai_client.set_url(new_text)
+	_openai_client.base_url = new_text
 	_store_config()
 
 
@@ -193,7 +236,7 @@ func _on_input_chat_gui_input(event: InputEvent) -> void:
 
 
 func _on_clear_chat_pressed() -> void:
-	_get_openai_client().clean_chat()
+	_reset_chat_history()
 	for c in _chat_container.get_children():
 		c.queue_free()
 
@@ -203,7 +246,18 @@ func _submit_chat() -> void:
 	var text := _input_chat.text
 	_user_message(text)
 	_input_chat.text = ""
-	_get_openai_client().chat_message(text)
+	_chat_history.push_back(C3OpenAIClient.make_user_msg(text))
+	var opts := C3OpenAIClient.ChatOptions.new()
+	opts.model = _cur_model
+	opts.temperature = 0.7
+	var response: C3OpenAIClient.ChatCompletionResponse = (
+		await _openai_client.chat_completion(_chat_history, opts)
+	)
+	if response == null:
+		_on_code_completion_error(null)
+		return
+	_chat_history.push_back(C3OpenAIClient.make_assistant_msg(response.content))
+	_on_chat_received(response.content)
 
 
 func _on_chat_received(text: String) -> void:
@@ -320,13 +374,33 @@ func _get_code_editor() -> CodeEdit:
 
 func _request_completion() -> void:
 	var pre_post := _get_pre_post()
-	var openai_client := _get_openai_client()
-	if not openai_client:
-		return
 	print_rich("[b]request_completion[/b] - Asking to complete the code")
-	openai_client.send_user_prompt(_strip_pre_indent(pre_post[0]), pre_post[1])
-	# Keep the original (unstripped) pre so _revert_change restores the caret correctly.
+	var pre := _strip_pre_indent(pre_post[0])
+	var post := pre_post[1]
+	var diff := (pre + post).length() - MAX_LENGTH
+	if diff > 0:
+		if post.length() > diff:
+			post = post.substr(0, diff)
+		else:
+			pre = pre.substr(diff - post.length())
+			post = ""
+	var messages: Array[Dictionary] = [
+		C3OpenAIClient.make_system_msg(COMPLETION_SYSTEM),
+		C3OpenAIClient.make_user_msg(pre + INSERT_TAG + post),
+	]
+	var opts := C3OpenAIClient.ChatOptions.new()
+	opts.model = _cur_model
+	opts.temperature = 0.5
+	opts.max_tokens = 500
+	opts.stop = PackedStringArray(["\n\n" if _allow_multiline else "\n"])
 	_request_code_state = pre_post
+	var response: C3OpenAIClient.ChatCompletionResponse = (
+		await _openai_client.chat_completion(messages, opts)
+	)
+	if response == null:
+		_on_code_completion_error(null)
+		return
+	_on_code_completion_received(response.content, pre, post)
 
 
 ## Removes trailing whitespace from the last line of [param pre] when that
@@ -366,10 +440,6 @@ func _get_pre_post() -> Array[String]:
 	return result
 
 
-func _get_openai_client() -> OpenAIClient:
-	return _openai_client
-
-
 ## Returns true if the editor content still matches the snapshot in
 ## [member _request_code_state]. A false result means the user typed during
 ## the request and the incoming completion should be discarded.[br]
@@ -389,7 +459,6 @@ func _matches_request_state(pre: String, post: String) -> bool:
 func _set_model(model_name: String) -> void:
 	print_rich("[b]set_model[/b] - Set model: ", model_name)
 	_cur_model = model_name
-	_get_openai_client().set_model(model_name)
 
 
 func _set_shortcut_modifier(modifier: String) -> void:
@@ -405,9 +474,7 @@ func _store_config() -> void:
 	config.set_value("preferences", "model", _cur_model)
 	config.set_value("preferences", "shortcut_modifier", _cur_shortcut_modifier)
 	config.set_value("preferences", "shortcut_key", _cur_shortcut_key)
-	config.set_value(
-		"preferences", "allow_multiline", _openai_client.allow_multiline
-	)
+	config.set_value("preferences", "allow_multiline", _allow_multiline)
 	config.save_encrypted_pass(PREFERENCES_STORAGE_NAME, PREFERENCES_PASS)
 
 
@@ -416,7 +483,7 @@ func _load_config() -> void:
 	var err := config.load_encrypted_pass(
 		PREFERENCES_STORAGE_NAME, PREFERENCES_PASS
 	)
-	_openai_client.set_url(_url_text_input.text)
+	_openai_client.base_url = _url_text_input.text
 	_fetch_models()
 	if err != OK:
 		return
@@ -429,11 +496,8 @@ func _load_config() -> void:
 		"preferences", "shortcut_key", _cur_shortcut_key
 	)
 	_apply_by_value(_shortcut_key_select, _cur_shortcut_key)
-	var allow_multiline: bool = config.get_value(
-		"preferences", "allow_multiline", false
-	)
-	_openai_client.allow_multiline = allow_multiline
-	_multiline_check.button_pressed = allow_multiline
+	_allow_multiline = config.get_value("preferences", "allow_multiline", false)
+	_multiline_check.button_pressed = _allow_multiline
 
 
 ## Selects an [OptionButton] item whose display text matches [param value].
@@ -447,7 +511,12 @@ func _apply_by_value(option_button: OptionButton, value: String) -> void:
 func _fetch_models() -> void:
 	_reload_button.visible = false
 	_loading_indicator.visible = true
-	_openai_client.fetch_models()
+	var ids := await _openai_client.get_models()
+	_on_models_loaded(ids)
+
+
+func _reset_chat_history() -> void:
+	_chat_history = [C3OpenAIClient.make_system_msg(CHAT_PREFIX)]
 
 
 func _bot_message(text: String) -> void:
