@@ -253,8 +253,8 @@ func _submit_chat() -> void:
 	var response: C3OpenAIClient.ChatCompletionResponse = (
 		await _openai_client.chat_completion(_chat_history, opts)
 	)
-	if response == null:
-		_on_code_completion_error(null)
+	if not response.ok:
+		push_error("Error fetching chat completion:\n" + str(response.error))
 		return
 	_chat_history.push_back(C3OpenAIClient.make_assistant_msg(response.content))
 	_on_chat_received(response.content)
@@ -397,8 +397,8 @@ func _request_completion() -> void:
 	var response: C3OpenAIClient.ChatCompletionResponse = (
 		await _openai_client.chat_completion(messages, opts)
 	)
-	if response == null:
-		_on_code_completion_error(null)
+	if not response.ok:
+		push_error("Error getting chat completion:\n" + str(response.error))
 		return
 	_on_code_completion_received(response.content, pre, post)
 
@@ -511,8 +511,11 @@ func _apply_by_value(option_button: OptionButton, value: String) -> void:
 func _fetch_models() -> void:
 	_reload_button.visible = false
 	_loading_indicator.visible = true
-	var ids := await _openai_client.get_models()
-	_on_models_loaded(ids)
+	var models_res := await _openai_client.get_models()
+	if not models_res.ok:
+		push_error("Error loading models:\n" + str(models_res.error))
+		return
+	_on_models_loaded(models_res.ids)
 
 
 func _reset_chat_history() -> void:
